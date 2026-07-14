@@ -1,0 +1,106 @@
+{
+  "id": "exec-on-demand-dispatch",
+  "title": "On-demand dispatch execution",
+  "layerDepth": 1,
+  "ownerId": "agent-dispatch",
+  "lastUpdatedIso": "2026-07-14T00:00:00.000Z",
+  "problem": {
+    "topProblems": [
+      {
+        "id": "prob-match-latency",
+        "description": "Matching riders to nearby available drivers must feel instant or the hail habit wins"
+      },
+      {
+        "id": "prob-supply-gaps",
+        "description": "Sparse driver density in a new city creates long ETAs and cancelled trips"
+      }
+    ],
+    "existingAlternatives": [
+      {
+        "description": "Radio taxi dispatch"
+      },
+      {
+        "description": "Manual SMS / call center ordering"
+      }
+    ]
+  },
+  "solution": {
+    "features": [
+      {
+        "id": "feat-geo-match",
+        "description": "Geo-fenced matching with live driver locations and ETA"
+      },
+      {
+        "id": "feat-driver-app",
+        "description": "Driver app to accept trips, navigate, and confirm drop-off"
+      },
+      {
+        "id": "feat-rider-app",
+        "description": "Rider app to request, track, and rate the trip"
+      }
+    ]
+  },
+  "customerSegments": {
+    "targetUsers": [
+      {
+        "personaName": "First-city riders in launch neighborhoods"
+      },
+      {
+        "personaName": "Partner drivers hunting utilization"
+      }
+    ],
+    "earlyAdopters": ["sf-soho-chelsea-test-zones", "ex-taxi-and-limo-drivers"]
+  },
+  "valueProposition": {
+    "statement": "Request to car-en-route in under a few minutes in covered zones"
+  },
+  "channels": {
+    "paths": [
+      {
+        "description": "In-app request flow"
+      },
+      {
+        "description": "Driver onboarding through city ops"
+      }
+    ]
+  },
+  "costStructure": {
+    "expenses": [
+      {
+        "description": "Realtime location and routing APIs",
+        "amountUsd": 8000
+      },
+      {
+        "description": "Dispatch / matching service compute",
+        "amountUsd": 12000
+      }
+    ]
+  },
+  "revenueStreams": {
+    "returns": [
+      {
+        "description": "Completed trips attributable to dispatch quality",
+        "valueUsd": 90000
+      }
+    ]
+  },
+  "keyMetrics": {
+    "kpis": [
+      {
+        "metricName": "median_eta_minutes",
+        "targetValue": 5
+      },
+      {
+        "metricName": "match_success_rate",
+        "targetValue": 0.95
+      },
+      {
+        "metricName": "cancel_rate",
+        "targetValue": 0.08
+      }
+    ]
+  },
+  "unfairAdvantage": {
+    "moatDescription": "City-by-city density know-how and dispatch heuristics competitors must re-learn per market"
+  }
+}

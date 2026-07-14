@@ -1,0 +1,226 @@
+{
+  "$schema": "https://fractal-lean-canvas.local/schema/0.1.0.json",
+  "schemaVersion": "0.1.0",
+  "data": {
+    "id": "uber-lean-canvas",
+    "title": "Uber (early Lean Canvas)",
+    "layerDepth": 0,
+    "ownerId": "human",
+    "lastUpdatedIso": "2026-07-14T00:00:00.000Z",
+    "problem": {
+      "topProblems": [
+        {
+          "id": "prob-unreliable-ride",
+          "description": "Hard to find a clean, reliable, and affordable ride in a timely manner"
+        },
+        {
+          "id": "prob-hail-friction",
+          "description": "Street-hailing and phone dispatch are opaque — unknown ETA, cash hassle, no trip trail"
+        },
+        {
+          "id": "prob-driver-idle",
+          "description": "Drivers lack flexible demand and spend too much time idle or chasing radio dispatch"
+        }
+      ],
+      "existingAlternatives": [
+        {
+          "description": "Traditional taxis"
+        },
+        {
+          "description": "Public transportation"
+        },
+        {
+          "description": "Rental cars / personal cars / walking"
+        },
+        {
+          "description": "Other ride-hailing (later: Lyft and local clones)"
+        }
+      ]
+    },
+    "solution": {
+      "features": [
+        {
+          "id": "feat-on-demand-dispatch",
+          "description": "Mobile app that matches riders with nearby drivers in minutes",
+          "executionCanvas": { "ref": "./exec-on-demand-dispatch.json" }
+        },
+        {
+          "id": "feat-cashless-pay",
+          "description": "Cashless card payment with automatic receipts"
+        },
+        {
+          "id": "feat-gps-ratings",
+          "description": "Live GPS tracking, ETAs, trip history, and two-sided ratings"
+        }
+      ]
+    },
+    "customerSegments": {
+      "targetUsers": [
+        {
+          "personaName": "Urban dwellers who need fast, dependable trips across the city"
+        },
+        {
+          "personaName": "Business travelers who want a professional, on-demand car"
+        },
+        {
+          "personaName": "Night-out riders when transit is sparse or unreliable"
+        }
+      ],
+      "earlyAdopters": [
+        "tech-savvy-sf-urbanites",
+        "frequent-taxi-users-unhappy-with-service",
+        "event-and-nightlife-crowds"
+      ]
+    },
+    "valueProposition": {
+      "statement": "The smartest way to get around — tap a button, get a safe reliable ride in minutes",
+      "highLevelConceptCanvas": {
+        "id": "concept-personal-driver",
+        "title": "High-level concept: personal driver in your pocket",
+        "layerDepth": 1,
+        "ownerId": "human",
+        "lastUpdatedIso": "2026-07-14T00:00:00.000Z",
+        "problem": {
+          "topProblems": [
+            {
+              "id": "prob-explain-uber",
+              "description": "Need a one-line story strangers remember after one demo ride"
+            }
+          ],
+          "existingAlternatives": [
+            {
+              "description": "Call a limo company"
+            },
+            {
+              "description": "Hail a yellow cab"
+            }
+          ]
+        },
+        "solution": {
+          "features": [
+            {
+              "id": "feat-one-liner",
+              "description": "Pitch: UberBlack / on-demand car service via iPhone — your personal driver in your pocket"
+            }
+          ]
+        },
+        "customerSegments": {
+          "targetUsers": [
+            {
+              "personaName": "Investors, press, and first SF riders hearing the pitch"
+            }
+          ],
+          "earlyAdopters": ["vc-event-attendees", "early-adopter-bloggers"]
+        },
+        "valueProposition": {
+          "statement": "On-demand private rides at the push of a button"
+        },
+        "channels": {
+          "paths": [
+            {
+              "description": "Founder demos and free rides at tech/VC events"
+            }
+          ]
+        },
+        "costStructure": {
+          "expenses": [
+            {
+              "description": "Demo / subsidy rides for influencers",
+              "amountUsd": 5000
+            }
+          ]
+        },
+        "revenueStreams": {
+          "returns": [
+            {
+              "description": "Viral WOM from memorable first rides",
+              "valueUsd": 0
+            }
+          ]
+        },
+        "keyMetrics": {
+          "kpis": [
+            {
+              "metricName": "pitch_recall_rate",
+              "targetValue": 0.8
+            }
+          ]
+        },
+        "unfairAdvantage": {
+          "moatDescription": "Category-defining one-liner before the market is crowded"
+        }
+      }
+    },
+    "channels": {
+      "paths": [
+        {
+          "description": "Mobile app stores (iOS then Android)"
+        },
+        {
+          "description": "PR and early-adopter blogs / social"
+        },
+        {
+          "description": "Word of mouth and rider referral codes"
+        },
+        {
+          "description": "City launch ops — free rides at tech events and partnerships"
+        }
+      ]
+    },
+    "costStructure": {
+      "expenses": [
+        {
+          "description": "City GM / ops wages",
+          "amountUsd": 25000
+        },
+        {
+          "description": "App, web, SMS, and mapping infrastructure",
+          "amountUsd": 40000
+        },
+        {
+          "description": "Driver incentives and launch subsidies",
+          "amountUsd": 30000
+        },
+        {
+          "description": "Insurance, legal, and local compliance",
+          "amountUsd": 15000
+        }
+      ]
+    },
+    "revenueStreams": {
+      "returns": [
+        {
+          "description": "Commission take-rate on every completed trip",
+          "valueUsd": 120000
+        },
+        {
+          "description": "Surge pricing during peak demand",
+          "valueUsd": 20000
+        }
+      ]
+    },
+    "keyMetrics": {
+      "kpis": [
+        {
+          "metricName": "daily_active_riders",
+          "targetValue": 1000
+        },
+        {
+          "metricName": "trips_per_day",
+          "targetValue": 3000
+        },
+        {
+          "metricName": "driver_utilization",
+          "targetValue": 0.7
+        },
+        {
+          "metricName": "avg_ride_rating",
+          "targetValue": 4.8
+        }
+      ]
+    },
+    "unfairAdvantage": {
+      "moatDescription": "Two-sided network effects plus brand trust in ‘push-button reliable rides’ — hard to copy once density exists"
+    }
+  }
+}
