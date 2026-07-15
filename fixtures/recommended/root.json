@@ -21,8 +21,14 @@
         }
       ],
       "existingAlternatives": [
-        { "id": "alt-taxis", "title": "Traditional taxis" },
-        { "id": "alt-transit", "title": "Public transportation" },
+        {
+          "id": "alt-taxis",
+          "title": "Traditional taxis"
+        },
+        {
+          "id": "alt-transit",
+          "title": "Public transportation"
+        },
         {
           "id": "alt-own-car",
           "title": "Rental cars / personal cars / walking"
@@ -38,7 +44,9 @@
         {
           "id": "feat-on-demand-dispatch",
           "title": "Mobile app that matches riders with nearby drivers in minutes",
-          "node": { "id": "exec-on-demand-dispatch" }
+          "node": {
+            "id": "exec-on-demand-dispatch"
+          }
         },
         {
           "id": "feat-cashless-pay",
@@ -66,18 +74,26 @@
         }
       ],
       "earlyAdopters": [
-        { "id": "adopt-sf-tech", "title": "Tech-savvy SF urbanites" },
+        {
+          "id": "adopt-sf-tech",
+          "title": "Tech-savvy SF urbanites"
+        },
         {
           "id": "adopt-taxi-unhappy",
           "title": "Frequent taxi users unhappy with service"
         },
-        { "id": "adopt-nightlife", "title": "Event and nightlife crowds" }
+        {
+          "id": "adopt-nightlife",
+          "title": "Event and nightlife crowds"
+        }
       ]
     },
     "valueProposition": {
       "id": "uvp-smartest-way",
       "title": "The smartest way to get around — tap a button, get a safe reliable ride in minutes",
-      "node": { "id": "concept-personal-driver" }
+      "node": {
+        "id": "concept-personal-driver"
+      }
     },
     "channels": {
       "paths": [
@@ -85,8 +101,14 @@
           "id": "chan-app-stores",
           "title": "Mobile app stores (iOS then Android)"
         },
-        { "id": "chan-pr", "title": "PR and early-adopter blogs / social" },
-        { "id": "chan-wom", "title": "Word of mouth and rider referral codes" },
+        {
+          "id": "chan-pr",
+          "title": "PR and early-adopter blogs / social"
+        },
+        {
+          "id": "chan-wom",
+          "title": "Word of mouth and rider referral codes"
+        },
         {
           "id": "chan-city-launch",
           "title": "City launch ops — free rides at tech events and partnerships"
@@ -95,7 +117,11 @@
     },
     "costStructure": {
       "expenses": [
-        { "id": "exp-city-gm", "title": "City GM / ops wages", "value": 25000 },
+        {
+          "id": "exp-city-gm",
+          "title": "City GM / ops wages",
+          "value": 25000
+        },
         {
           "id": "exp-infra",
           "title": "App, web, SMS, and mapping infrastructure",
@@ -129,10 +155,26 @@
     },
     "keyMetrics": {
       "kpis": [
-        { "id": "kpi-dau", "title": "Daily active riders", "value": 1000 },
-        { "id": "kpi-trips", "title": "Trips per day", "value": 3000 },
-        { "id": "kpi-util", "title": "Driver utilization", "value": 0.7 },
-        { "id": "kpi-rating", "title": "Avg ride rating", "value": 4.8 }
+        {
+          "id": "kpi-dau",
+          "title": "Daily active riders",
+          "value": 1000
+        },
+        {
+          "id": "kpi-trips",
+          "title": "Trips per day",
+          "value": 3000
+        },
+        {
+          "id": "kpi-util",
+          "title": "Driver utilization",
+          "value": 0.7
+        },
+        {
+          "id": "kpi-rating",
+          "title": "Avg ride rating",
+          "value": 4.8
+        }
       ]
     },
     "unfairAdvantage": {
