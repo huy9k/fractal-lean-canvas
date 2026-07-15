@@ -8,8 +8,7 @@ export const SCHEMA_VERSION = "0.1.0" as const;
 export type SchemaVersionString = typeof SCHEMA_VERSION;
 
 /** Default `$schema` URI when wrapping canvases for JSON export. */
-export const DEFAULT_SCHEMA_URI =
-  "https://github.com/huy9k/fractal-lean-canvas/tree/main/src/schema";
+export const DEFAULT_SCHEMA_URI = `https://raw.githubusercontent.com/huy9k/fractal-lean-canvas/raw-schema-json/envelope-${SCHEMA_VERSION}.json`;
 
 /**
  * GitOps document shell: version authority for one Fractal Lean Canvas root.

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { createRequire } from "node:module";
+import { VersionedFractalEnvelope } from "./schema/envelope.js";
 import {
   htmlTableFromPath,
   jsonFromPath,
@@ -20,6 +21,7 @@ Commands:
   markdown <path> [-r]         Render list/heading markdown (stdout)
   html-table <path> [-r]       Render classic Lean Canvas as pure HTML (stdout)
   json <path> [-r]             Print versioned FLC JSON (with -r, inline nodes)
+  schema                       Print the raw JSON Schema of the envelope (stdout)
 
 Options:
   -r, --recursive  Follow node ids (markdown/html: extra docs; json: inline tree)
@@ -55,6 +57,11 @@ async function main(): Promise<void> {
   const recursive = args.includes("-r") || args.includes("--recursive");
   const positional = args.filter((a) => a !== "-r" && a !== "--recursive");
   const [command, target] = positional;
+
+  if (command === "schema") {
+    process.stdout.write(JSON.stringify(VersionedFractalEnvelope, null, 2) + "\n");
+    return;
+  }
 
   const renderCommands = new Set(["markdown", "html-table", "json"]);
   if (

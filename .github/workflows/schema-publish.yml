@@ -1,0 +1,68 @@
+name: Publish JSON Schema
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "src/schema/**"
+      - "src/cli.ts"
+      - "package.json"
+
+permissions:
+  contents: write
+
+jobs:
+  publish-schema:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Generate Schema
+        run: |
+          SCHEMA_VERSION=$(node --input-type=module -e "import { SCHEMA_VERSION } from './dist/schema/envelope.js'; console.log(SCHEMA_VERSION)")
+          echo "SCHEMA_VERSION=$SCHEMA_VERSION" >> $GITHUB_ENV
+          node dist/cli.js schema > "/tmp/envelope-${SCHEMA_VERSION}.json"
+
+      - name: Deploy to raw-schema-json branch
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Fetch and checkout (or create) the target branch
+          git fetch origin raw-schema-json || true
+          if git show-ref --quiet refs/remotes/origin/raw-schema-json; then
+            git checkout raw-schema-json
+          else
+            git checkout --orphan raw-schema-json
+          fi
+
+          # Clean git tree (leaving git structure intact)
+          git rm -rf .
+
+          # Move the generated schema back
+          mv "/tmp/envelope-${{ env.SCHEMA_VERSION }}.json" "envelope-${{ env.SCHEMA_VERSION }}.json"
+
+          # Add and commit
+          git add "envelope-${{ env.SCHEMA_VERSION }}.json"
+
+          # Check if there are changes to commit
+          if git diff --cached --quiet; then
+            echo "No changes to the schema. Skipping push."
+          else
+            git commit -m "chore: update raw JSON schema v${{ env.SCHEMA_VERSION }}"
+            git push origin raw-schema-json
+          fi
