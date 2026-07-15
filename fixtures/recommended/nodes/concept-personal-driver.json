@@ -6,69 +6,69 @@
     "topProblems": [
       {
         "id": "prob-explain-uber",
-        "description": "Need a one-line story strangers remember after one demo ride"
+        "title": "Need a one-line story strangers remember after one demo ride"
       }
     ],
     "existingAlternatives": [
-      {
-        "description": "Call a limo company"
-      },
-      {
-        "description": "Hail a yellow cab"
-      }
+      { "id": "alt-limo", "title": "Call a limo company" },
+      { "id": "alt-yellow", "title": "Hail a yellow cab" }
     ]
   },
   "solution": {
     "features": [
       {
         "id": "feat-one-liner",
-        "description": "Pitch: UberBlack / on-demand car service via iPhone — your personal driver in your pocket"
+        "title": "Pitch: UberBlack / on-demand car service via iPhone — your personal driver in your pocket"
       }
     ]
   },
   "customerSegments": {
     "targetUsers": [
       {
-        "personaName": "Investors, press, and first SF riders hearing the pitch"
+        "id": "seg-pitch-audience",
+        "title": "Investors, press, and first SF riders hearing the pitch"
       }
     ],
-    "earlyAdopters": ["vc-event-attendees", "early-adopter-bloggers"]
+    "earlyAdopters": [
+      { "id": "adopt-vc-events", "title": "VC event attendees" },
+      { "id": "adopt-bloggers", "title": "Early adopter bloggers" }
+    ]
   },
   "valueProposition": {
-    "statement": "On-demand private rides at the push of a button"
+    "id": "uvp-push-button",
+    "title": "On-demand private rides at the push of a button"
   },
   "channels": {
     "paths": [
       {
-        "description": "Founder demos and free rides at tech/VC events"
+        "id": "chan-founder-demos",
+        "title": "Founder demos and free rides at tech/VC events"
       }
     ]
   },
   "costStructure": {
     "expenses": [
       {
-        "description": "Demo / subsidy rides for influencers",
-        "amountUsd": 5000
+        "id": "exp-demo-rides",
+        "title": "Demo / subsidy rides for influencers",
+        "value": 5000
       }
     ]
   },
   "revenueStreams": {
     "returns": [
       {
-        "description": "Viral WOM from memorable first rides",
-        "valueUsd": 0
+        "id": "rev-wom",
+        "title": "Viral WOM from memorable first rides",
+        "value": 0
       }
     ]
   },
   "keyMetrics": {
-    "kpis": [
-      {
-        "metricName": "pitch_recall_rate",
-        "targetValue": 0.8
-      }
-    ]
+    "kpis": [{ "id": "kpi-recall", "title": "Pitch recall rate", "value": 0.8 }]
   },
   "unfairAdvantage": {
-    "moatDescription": "Category-defining one-liner before the market is crowded"
+    "id": "moat-category",
+    "title": "Category-defining one-liner before the market is crowded"
   }
 }

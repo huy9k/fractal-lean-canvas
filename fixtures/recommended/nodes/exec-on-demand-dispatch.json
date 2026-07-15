@@ -6,99 +6,92 @@
     "topProblems": [
       {
         "id": "prob-match-latency",
-        "description": "Matching riders to nearby available drivers must feel instant or the hail habit wins"
+        "title": "Matching riders to nearby available drivers must feel instant or the hail habit wins"
       },
       {
         "id": "prob-supply-gaps",
-        "description": "Sparse driver density in a new city creates long ETAs and cancelled trips"
+        "title": "Sparse driver density in a new city creates long ETAs and cancelled trips"
       }
     ],
     "existingAlternatives": [
-      {
-        "description": "Radio taxi dispatch"
-      },
-      {
-        "description": "Manual SMS / call center ordering"
-      }
+      { "id": "alt-radio", "title": "Radio taxi dispatch" },
+      { "id": "alt-sms", "title": "Manual SMS / call center ordering" }
     ]
   },
   "solution": {
     "features": [
       {
         "id": "feat-geo-match",
-        "description": "Geo-fenced matching with live driver locations and ETA"
+        "title": "Geo-fenced matching with live driver locations and ETA"
       },
       {
         "id": "feat-driver-app",
-        "description": "Driver app to accept trips, navigate, and confirm drop-off"
+        "title": "Driver app to accept trips, navigate, and confirm drop-off"
       },
       {
         "id": "feat-rider-app",
-        "description": "Rider app to request, track, and rate the trip"
+        "title": "Rider app to request, track, and rate the trip"
       }
     ]
   },
   "customerSegments": {
     "targetUsers": [
       {
-        "personaName": "First-city riders in launch neighborhoods"
+        "id": "seg-first-city",
+        "title": "First-city riders in launch neighborhoods"
       },
       {
-        "personaName": "Partner drivers hunting utilization"
+        "id": "seg-partner-drivers",
+        "title": "Partner drivers hunting utilization"
       }
     ],
-    "earlyAdopters": ["sf-soho-chelsea-test-zones", "ex-taxi-and-limo-drivers"]
+    "earlyAdopters": [
+      { "id": "adopt-test-zones", "title": "SF, Soho, and Chelsea test zones" },
+      { "id": "adopt-ex-taxi", "title": "Ex-taxi and limo drivers" }
+    ]
   },
   "valueProposition": {
-    "statement": "Request to car-en-route in under a few minutes in covered zones"
+    "id": "uvp-fast-eta",
+    "title": "Request to car-en-route in under a few minutes in covered zones"
   },
   "channels": {
     "paths": [
-      {
-        "description": "In-app request flow"
-      },
-      {
-        "description": "Driver onboarding through city ops"
-      }
+      { "id": "chan-in-app", "title": "In-app request flow" },
+      { "id": "chan-driver-ops", "title": "Driver onboarding through city ops" }
     ]
   },
   "costStructure": {
     "expenses": [
       {
-        "description": "Realtime location and routing APIs",
-        "amountUsd": 8000
+        "id": "exp-maps",
+        "title": "Realtime location and routing APIs",
+        "value": 8000
       },
       {
-        "description": "Dispatch / matching service compute",
-        "amountUsd": 12000
+        "id": "exp-compute",
+        "title": "Dispatch / matching service compute",
+        "value": 12000
       }
     ]
   },
   "revenueStreams": {
     "returns": [
       {
-        "description": "Completed trips attributable to dispatch quality",
-        "valueUsd": 90000
+        "id": "rev-dispatch-trips",
+        "title": "Completed trips attributable to dispatch quality",
+        "value": 90000
       }
     ]
   },
   "keyMetrics": {
     "kpis": [
-      {
-        "metricName": "median_eta_minutes",
-        "targetValue": 5
-      },
-      {
-        "metricName": "match_success_rate",
-        "targetValue": 0.95
-      },
-      {
-        "metricName": "cancel_rate",
-        "targetValue": 0.08
-      }
+      { "id": "kpi-eta", "title": "Median ETA in minutes", "value": 5 },
+      { "id": "kpi-match", "title": "Match success rate", "value": 0.95 },
+      { "id": "kpi-cancel", "title": "Cancel rate", "value": 0.08 }
     ]
   },
   "unfairAdvantage": {
-    "moatDescription": "City-by-city density know-how and dispatch heuristics competitors must re-learn per market"
+    "id": "moat-density",
+    "title": "City-by-city density know-how and dispatch heuristics competitors must re-learn per market"
   }
 }

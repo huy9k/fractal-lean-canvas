@@ -1,4 +1,9 @@
-import type { CanvasSlot, FractalLeanCanvas } from "../schema/canvas.js";
+import {
+  collectLineItems,
+  isEmbeddedCanvas,
+  type CanvasSlot,
+  type FractalLeanCanvas,
+} from "../schema/canvas.js";
 
 export const MAX_CANVAS_DEPTH = 16;
 
@@ -35,95 +40,32 @@ export type SemanticWalkOptions = {
 };
 
 /**
- * Collect direct child nest slots (`{ id }` only).
+ * Collect direct child node slots from every line item.
  */
 export function collectCanvasSlots(
   canvas: FractalLeanCanvas,
   basePath: string,
 ): NestedCanvasSlot[] {
   const slots: NestedCanvasSlot[] = [];
-
-  const push = (path: string, slot: CanvasSlot | undefined): void => {
-    if (slot) slots.push({ path, slot });
-  };
-
-  for (const problem of canvas.problem.topProblems) {
-    push(
-      `${basePath}/problem/topProblems/${problem.id}/subAnalysisCanvas`,
-      problem.subAnalysisCanvas,
-    );
+  for (const { path, item } of collectLineItems(canvas)) {
+    if (item.node) {
+      slots.push({ path: `${basePath}/${path}/node`, slot: item.node });
+    }
   }
-
-  for (let i = 0; i < canvas.problem.existingAlternatives.length; i++) {
-    push(
-      `${basePath}/problem/existingAlternatives/${i}/disruptionCanvas`,
-      canvas.problem.existingAlternatives[i]?.disruptionCanvas,
-    );
-  }
-
-  for (const feature of canvas.solution.features) {
-    push(
-      `${basePath}/solution/features/${feature.id}/executionCanvas`,
-      feature.executionCanvas,
-    );
-  }
-
-  for (let i = 0; i < canvas.customerSegments.targetUsers.length; i++) {
-    push(
-      `${basePath}/customerSegments/targetUsers/${i}/demographicCanvas`,
-      canvas.customerSegments.targetUsers[i]?.demographicCanvas,
-    );
-  }
-
-  push(
-    `${basePath}/valueProposition/highLevelConceptCanvas`,
-    canvas.valueProposition.highLevelConceptCanvas,
-  );
-
-  for (let i = 0; i < canvas.channels.paths.length; i++) {
-    push(
-      `${basePath}/channels/paths/${i}/acquisitionCanvas`,
-      canvas.channels.paths[i]?.acquisitionCanvas,
-    );
-  }
-
-  for (let i = 0; i < canvas.costStructure.expenses.length; i++) {
-    push(
-      `${basePath}/costStructure/expenses/${i}/mitigationCanvas`,
-      canvas.costStructure.expenses[i]?.mitigationCanvas,
-    );
-  }
-
-  for (let i = 0; i < canvas.revenueStreams.returns.length; i++) {
-    push(
-      `${basePath}/revenueStreams/returns/${i}/monetizationCanvas`,
-      canvas.revenueStreams.returns[i]?.monetizationCanvas,
-    );
-  }
-
-  for (let i = 0; i < canvas.keyMetrics.kpis.length; i++) {
-    push(
-      `${basePath}/keyMetrics/kpis/${i}/optimizationCanvas`,
-      canvas.keyMetrics.kpis[i]?.optimizationCanvas,
-    );
-  }
-
-  push(
-    `${basePath}/unfairAdvantage/defenseCanvas`,
-    canvas.unfairAdvantage.defenseCanvas,
-  );
-
   return slots;
 }
 
-/** Sum expense amounts on a canvas. */
+/** Sum expense line-item values on a canvas. */
 function expenseTotal(canvas: FractalLeanCanvas): number {
-  return canvas.costStructure.expenses.reduce((sum, e) => sum + e.amountUsd, 0);
+  return canvas.costStructure.expenses.reduce(
+    (sum, e) => sum + (e.value ?? 0),
+    0,
+  );
 }
 
 /**
  * Semantic rules: unique ids, max depth, cycle guard, budget rollups.
- * Without `resolveCanvasId`, nest slots are not followed.
+ * Embedded canvases under `node` are always walked; `{ id }` refs need `resolveCanvasId`.
  */
 export function validateSemantic(
   root: FractalLeanCanvas,
@@ -162,15 +104,12 @@ export function validateSemantic(
     seenIds.set(id, file ? `${file}:${path}` : path);
   };
 
-  /** Resolve an id nest slot; emits issues and returns undefined on failure/skip. */
+  /** Resolve a node slot (embedded canvas or id ref); skip when not following links. */
   const resolveChild = (
     slot: CanvasSlot,
     slotPath: string,
     fromFile: string,
   ): { canvas: FractalLeanCanvas; file: string } | undefined => {
-    // Single-document mode: do not follow nest slots.
-    if (!options.resolveCanvasId) return undefined;
-
     if (idStack.includes(slot.id)) {
       pushIssue(
         {
@@ -181,6 +120,13 @@ export function validateSemantic(
       );
       return undefined;
     }
+
+    // Nested canvases (e.g. flc json -r) walk in-document; no file resolve.
+    if (isEmbeddedCanvas(slot)) {
+      return { canvas: slot, file: fromFile };
+    }
+
+    if (!options.resolveCanvasId) return undefined;
 
     const result = options.resolveCanvasId(slot.id, fromFile, slotPath);
     if ("message" in result) {
@@ -217,40 +163,26 @@ export function validateSemantic(
       return;
     }
 
-    // Register ids once per canvas object (re-entry via another nest skips).
     if (!idsRegisteredFor.has(canvas)) {
       idsRegisteredFor.add(canvas);
       registerId(canvas.id, `${path}/id`, file);
-
-      for (const problem of canvas.problem.topProblems) {
-        registerId(
-          problem.id,
-          `${path}/problem/topProblems/${problem.id}/id`,
-          file,
-        );
-      }
-      for (const feature of canvas.solution.features) {
-        registerId(
-          feature.id,
-          `${path}/solution/features/${feature.id}/id`,
-          file,
-        );
+      for (const { path: itemPath, item } of collectLineItems(canvas)) {
+        registerId(item.id, `${path}/${itemPath}/id`, file);
       }
     }
 
-    // Per-expense mitigation budget must not exceed the expense amount.
-    for (let i = 0; i < canvas.costStructure.expenses.length; i++) {
-      const expense = canvas.costStructure.expenses[i];
-      if (!expense?.mitigationCanvas) continue;
-      const slotPath = `${path}/costStructure/expenses/${i}/mitigationCanvas`;
-      const resolved = resolveChild(expense.mitigationCanvas, slotPath, file);
+    // Per-expense mitigation budget must not exceed the expense value.
+    for (const expense of canvas.costStructure.expenses) {
+      if (!expense.node || expense.value === undefined) continue;
+      const slotPath = `${path}/costStructure/expenses/${expense.id}/node`;
+      const resolved = resolveChild(expense.node, slotPath, file);
       if (!resolved) continue;
       const childTotal = expenseTotal(resolved.canvas);
-      if (childTotal > expense.amountUsd) {
+      if (childTotal > expense.value) {
         pushIssue(
           {
             path: slotPath,
-            message: `Mitigation expenses (${childTotal}) exceed expense amountUsd (${expense.amountUsd})`,
+            message: `Mitigation expenses (${childTotal}) exceed expense value (${expense.value})`,
           },
           file,
         );

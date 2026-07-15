@@ -1,4 +1,8 @@
-import type { CanvasSlot, FractalLeanCanvas } from "../schema/canvas.js";
+import type {
+  CanvasLineItem,
+  CanvasSlot,
+  FractalLeanCanvas,
+} from "../schema/canvas.js";
 import { collectCanvasSlots } from "../validate/semantic.js";
 
 export type MarkdownCanvasOptions = {
@@ -6,14 +10,24 @@ export type MarkdownCanvasOptions = {
   headingLevel?: number;
 };
 
-/** Format a nest slot as a compact inline pointer. */
-function nestRef(slot: CanvasSlot | undefined): string {
+/** Format a child-node pointer as a compact inline link. */
+function nodeRef(slot: CanvasSlot | undefined): string {
   return slot ? ` → \`${slot.id}\`` : "";
 }
 
-/** USD display for cost/revenue lines. */
-function usd(amount: number): string {
-  return `$${amount.toLocaleString("en-US")}`;
+/** USD / KPI numeric display. */
+function formatValue(value: number): string {
+  return Number.isInteger(value)
+    ? value.toLocaleString("en-US")
+    : String(value);
+}
+
+/** Human line for a CanvasLineItem (title-first; id stays machine-only). */
+function lineText(item: CanvasLineItem): string {
+  const bits = [item.title];
+  if (item.detail) bits.push(item.detail);
+  if (item.value !== undefined) bits.push(`**${formatValue(item.value)}**`);
+  return `${bits.join(" — ")}${nodeRef(item.node)}`;
 }
 
 /** Emit a markdown heading clamped to levels 1–6. */
@@ -23,7 +37,7 @@ function heading(level: number, text: string): string {
 }
 
 /**
- * Render one Fractal Lean Canvas as human-readable markdown.
+ * Render one Fractal Lean Canvas as human-readable markdown (lists + headings).
  */
 export function markdownCanvas(
   canvas: FractalLeanCanvas,
@@ -38,7 +52,6 @@ export function markdownCanvas(
   lines.push(`- **owner:** \`${canvas.ownerId}\``);
   lines.push("");
 
-  // Problem
   lines.push(heading(h + 1, "Problem"));
   lines.push("");
   if (canvas.problem.topProblems.length === 0) {
@@ -48,9 +61,7 @@ export function markdownCanvas(
     lines.push(heading(h + 2, "Top problems"));
     lines.push("");
     for (const p of canvas.problem.topProblems) {
-      lines.push(
-        `- **\`${p.id}\`** — ${p.description}${nestRef(p.subAnalysisCanvas)}`,
-      );
+      lines.push(`- ${lineText(p)}`);
     }
     lines.push("");
   }
@@ -58,12 +69,11 @@ export function markdownCanvas(
     lines.push(heading(h + 2, "Existing alternatives"));
     lines.push("");
     for (const a of canvas.problem.existingAlternatives) {
-      lines.push(`- ${a.description}${nestRef(a.disruptionCanvas)}`);
+      lines.push(`- ${lineText(a)}`);
     }
     lines.push("");
   }
 
-  // Solution
   lines.push(heading(h + 1, "Solution"));
   lines.push("");
   if (canvas.solution.features.length === 0) {
@@ -71,21 +81,18 @@ export function markdownCanvas(
     lines.push("");
   } else {
     for (const f of canvas.solution.features) {
-      lines.push(
-        `- **\`${f.id}\`** — ${f.description}${nestRef(f.executionCanvas)}`,
-      );
+      lines.push(`- ${lineText(f)}`);
     }
     lines.push("");
   }
 
-  // Customer segments
   lines.push(heading(h + 1, "Customer segments"));
   lines.push("");
   if (canvas.customerSegments.targetUsers.length > 0) {
     lines.push(heading(h + 2, "Target users"));
     lines.push("");
     for (const u of canvas.customerSegments.targetUsers) {
-      lines.push(`- ${u.personaName}${nestRef(u.demographicCanvas)}`);
+      lines.push(`- ${lineText(u)}`);
     }
     lines.push("");
   }
@@ -93,20 +100,16 @@ export function markdownCanvas(
     lines.push(heading(h + 2, "Early adopters"));
     lines.push("");
     for (const a of canvas.customerSegments.earlyAdopters) {
-      lines.push(`- \`${a}\``);
+      lines.push(`- ${lineText(a)}`);
     }
     lines.push("");
   }
 
-  // Value proposition
   lines.push(heading(h + 1, "Value proposition"));
   lines.push("");
-  lines.push(
-    `${canvas.valueProposition.statement}${nestRef(canvas.valueProposition.highLevelConceptCanvas)}`,
-  );
+  lines.push(lineText(canvas.valueProposition));
   lines.push("");
 
-  // Channels
   lines.push(heading(h + 1, "Channels"));
   lines.push("");
   if (canvas.channels.paths.length === 0) {
@@ -114,12 +117,11 @@ export function markdownCanvas(
     lines.push("");
   } else {
     for (const p of canvas.channels.paths) {
-      lines.push(`- ${p.description}${nestRef(p.acquisitionCanvas)}`);
+      lines.push(`- ${lineText(p)}`);
     }
     lines.push("");
   }
 
-  // Cost structure
   lines.push(heading(h + 1, "Cost structure"));
   lines.push("");
   if (canvas.costStructure.expenses.length === 0) {
@@ -127,14 +129,15 @@ export function markdownCanvas(
     lines.push("");
   } else {
     for (const e of canvas.costStructure.expenses) {
+      const amount =
+        e.value !== undefined ? ` — **$${formatValue(e.value)}**` : "";
       lines.push(
-        `- ${e.description} — **${usd(e.amountUsd)}**${nestRef(e.mitigationCanvas)}`,
+        `- ${e.title}${amount}${e.detail ? ` — ${e.detail}` : ""}${nodeRef(e.node)}`,
       );
     }
     lines.push("");
   }
 
-  // Revenue
   lines.push(heading(h + 1, "Revenue streams"));
   lines.push("");
   if (canvas.revenueStreams.returns.length === 0) {
@@ -142,14 +145,15 @@ export function markdownCanvas(
     lines.push("");
   } else {
     for (const r of canvas.revenueStreams.returns) {
+      const amount =
+        r.value !== undefined ? ` — **$${formatValue(r.value)}**` : "";
       lines.push(
-        `- ${r.description} — **${usd(r.valueUsd)}**${nestRef(r.monetizationCanvas)}`,
+        `- ${r.title}${amount}${r.detail ? ` — ${r.detail}` : ""}${nodeRef(r.node)}`,
       );
     }
     lines.push("");
   }
 
-  // KPIs
   lines.push(heading(h + 1, "Key metrics"));
   lines.push("");
   if (canvas.keyMetrics.kpis.length === 0) {
@@ -157,19 +161,16 @@ export function markdownCanvas(
     lines.push("");
   } else {
     for (const k of canvas.keyMetrics.kpis) {
-      lines.push(
-        `- **\`${k.metricName}\`** target **${k.targetValue}**${nestRef(k.optimizationCanvas)}`,
-      );
+      const target =
+        k.value !== undefined ? ` target **${formatValue(k.value)}**` : "";
+      lines.push(`- ${k.title}${target}${nodeRef(k.node)}`);
     }
     lines.push("");
   }
 
-  // Unfair advantage
   lines.push(heading(h + 1, "Unfair advantage"));
   lines.push("");
-  lines.push(
-    `${canvas.unfairAdvantage.moatDescription}${nestRef(canvas.unfairAdvantage.defenseCanvas)}`,
-  );
+  lines.push(lineText(canvas.unfairAdvantage));
   lines.push("");
 
   return lines.join("\n").trimEnd() + "\n";

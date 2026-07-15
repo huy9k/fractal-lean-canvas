@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 import { createRequire } from "node:module";
-import { markdownFromPath } from "./markdown/fromPath.js";
+import {
+  htmlTableFromPath,
+  jsonFromPath,
+  markdownFromPath,
+} from "./markdown/fromPath.js";
 import { validateEcosystem } from "./validate/ecosystem.js";
 
 const { version } = createRequire(import.meta.url)("../package.json") as {
@@ -10,12 +14,15 @@ const { version } = createRequire(import.meta.url)("../package.json") as {
 const HELP = `Usage: flc <command>
 
 Commands:
-  validate <path>  Validate an FLC ecosystem
-                   <path> is a directory containing root.json, or root.json itself
-                   Recommended: ./recommended with nested bare JSON under ./recommended/nodes/
-  markdown <path>  Render a canvas JSON file or ecosystem as markdown (stdout)
+  validate <path>              Validate an FLC ecosystem
+                               <path> is a directory containing root.json, or root.json itself
+                               Recommended: ./recommended with nested bare JSON under ./recommended/nodes/
+  markdown <path> [-r]         Render list/heading markdown (stdout)
+  html-table <path> [-r]       Render classic Lean Canvas as pure HTML (stdout)
+  json <path> [-r]             Print versioned FLC JSON (with -r, inline nodes)
 
 Options:
+  -r, --recursive  Follow node ids (markdown/html: extra docs; json: inline tree)
   -h, --help       Show help
   -v, --version    Show version
 `;
@@ -33,7 +40,7 @@ function printVersion(): never {
 }
 
 /**
- * CLI entry: `flc validate|markdown <path>`
+ * CLI entry: `flc validate|markdown|html-table|json <path>`
  */
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
@@ -45,20 +52,46 @@ async function main(): Promise<void> {
     printVersion();
   }
 
-  const [command, target] = args;
+  const recursive = args.includes("-r") || args.includes("--recursive");
+  const positional = args.filter((a) => a !== "-r" && a !== "--recursive");
+  const [command, target] = positional;
 
-  if (!target || (command !== "validate" && command !== "markdown")) {
+  const renderCommands = new Set(["markdown", "html-table", "json"]);
+  if (
+    !target ||
+    (command !== "validate" && !renderCommands.has(command ?? ""))
+  ) {
     console.error(HELP.trimEnd());
     process.exit(2);
   }
 
   if (command === "markdown") {
-    const result = await markdownFromPath(target);
+    const result = await markdownFromPath(target, { recursive });
     if (!result.ok) {
       console.error(result.message);
       process.exit(1);
     }
     process.stdout.write(result.markdown);
+    return;
+  }
+
+  if (command === "html-table") {
+    const result = await htmlTableFromPath(target, { recursive });
+    if (!result.ok) {
+      console.error(result.message);
+      process.exit(1);
+    }
+    process.stdout.write(result.output);
+    return;
+  }
+
+  if (command === "json") {
+    const result = await jsonFromPath(target, { recursive });
+    if (!result.ok) {
+      console.error(result.message);
+      process.exit(1);
+    }
+    process.stdout.write(result.output);
     return;
   }
 

@@ -30,12 +30,12 @@ function blankCanvas(
     problem: { topProblems: [], existingAlternatives: [] },
     solution: { features: [] },
     customerSegments: { targetUsers: [], earlyAdopters: [] },
-    valueProposition: { statement: "x" },
+    valueProposition: { id: "uvp", title: "x" },
     channels: { paths: [] },
     costStructure: { expenses: [] },
     revenueStreams: { returns: [] },
     keyMetrics: { kpis: [] },
-    unfairAdvantage: { moatDescription: "x" },
+    unfairAdvantage: { id: "moat", title: "x" },
     ...overrides,
   };
 }
@@ -59,7 +59,7 @@ describe("FLC validation", () => {
     assert.equal(issues.length, 0);
   });
 
-  it("validateEcosystem resolves nest ids in fixtures/recommended/", async () => {
+  it("validateEcosystem resolves node ids in fixtures/recommended/", async () => {
     const result = await validateEcosystem(FIXTURE_DIR);
     assert.equal(result.ok, true, JSON.stringify(result.issues, null, 2));
     assert.ok(result.filesChecked >= 3);
@@ -94,8 +94,8 @@ describe("FLC validation", () => {
               features: [
                 {
                   id: "feat-1",
-                  description: "nested",
-                  executionCanvas: { id: "shared-id" },
+                  title: "nested",
+                  node: { id: "shared-id" },
                 },
               ],
             },
@@ -120,7 +120,6 @@ describe("FLC validation", () => {
 
   it("rejects over-deep nesting", async () => {
     const dir = await mkdtemp(join(tmpdir(), "flc-"));
-    // Root (depth 0) → node-1 → … → node-(MAX+1) exceeds max depth.
     await writeFile(
       join(dir, ROOT_FILE_NAME),
       JSON.stringify(
@@ -132,8 +131,8 @@ describe("FLC validation", () => {
               features: [
                 {
                   id: "feat-0",
-                  description: "nest",
-                  executionCanvas: { id: "node-1" },
+                  title: "nest",
+                  node: { id: "node-1" },
                 },
               ],
             },
@@ -155,8 +154,8 @@ describe("FLC validation", () => {
                   features: [
                     {
                       id: `feat-${depth}`,
-                      description: "nest",
-                      executionCanvas: { id: `node-${depth + 1}` },
+                      title: "nest",
+                      node: { id: `node-${depth + 1}` },
                     },
                   ],
                 },
@@ -210,8 +209,8 @@ describe("FLC validation", () => {
               features: [
                 {
                   id: "feat-1",
-                  description: "child",
-                  executionCanvas: { id: "child" },
+                  title: "child",
+                  node: { id: "child" },
                 },
               ],
             },
@@ -241,8 +240,8 @@ describe("FLC validation", () => {
               features: [
                 {
                   id: "feat-1",
-                  description: "missing child",
-                  executionCanvas: { id: "does-not-exist" },
+                  title: "missing child",
+                  node: { id: "does-not-exist" },
                 },
               ],
             },
@@ -270,8 +269,8 @@ describe("FLC validation", () => {
               features: [
                 {
                   id: "feat-root",
-                  description: "to a",
-                  executionCanvas: { id: "canvas-a" },
+                  title: "to a",
+                  node: { id: "canvas-a" },
                 },
               ],
             },
@@ -289,8 +288,8 @@ describe("FLC validation", () => {
             features: [
               {
                 id: "feat-a",
-                description: "to b",
-                executionCanvas: { id: "canvas-b" },
+                title: "to b",
+                node: { id: "canvas-b" },
               },
             ],
           },
@@ -307,8 +306,8 @@ describe("FLC validation", () => {
             features: [
               {
                 id: "feat-b",
-                description: "to a",
-                executionCanvas: { id: "canvas-a" },
+                title: "to a",
+                node: { id: "canvas-a" },
               },
             ],
           },

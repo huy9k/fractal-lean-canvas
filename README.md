@@ -16,7 +16,7 @@ Requires Node.js 20+.
 
 ## Concepts
 
-1. **One recursive shape** — Every node is a `FractalLeanCanvas` with the nine Lean Canvas dimensions. Nest slots are always `{ "id": "canvas-id" }` (no inline nests, no file paths — one file per canvas; file tree is layout-only).
+1. **One recursive shape** — Every node is a `FractalLeanCanvas` with the nine Lean Canvas dimensions. On disk, child links are `{ "id": "canvas-id" }` on line-item `node` (one file per canvas; file tree is layout-only). Nested canvases under `node` are also schema-valid (e.g. `flc json -r`).
 2. **Single root** — Each ecosystem has one `root.json` versioned envelope. All other JSON files are bare canvases (no `schemaVersion`).
 3. **Homogeneous traversal** — Agents walk the same structure at enterprise depth or task depth (`validateEcosystem` resolves canvas ids from the root).
 4. **Git holds truth** — Documents are JSON in Git. Version authority lives only on `root.json`. There is no embedded commit hash.
@@ -45,6 +45,7 @@ import {
   validateDocument,
   validateEcosystem,
   markdownFromPath,
+  htmlTableFromPath,
   SCHEMA_VERSION,
 } from "fractal-lean-canvas";
 
@@ -54,8 +55,13 @@ if (issues.length) throw new Error(issues.map((i) => i.message).join("\n"));
 const result = await validateEcosystem("./recommended"); // expects ./recommended/root.json
 if (!result.ok) process.exit(1);
 
-const md = await markdownFromPath("./recommended");
+const md = await markdownFromPath("./recommended/root.json");
 if (md.ok) console.log(md.markdown);
+
+const html = await htmlTableFromPath("./recommended/root.json", {
+  recursive: true,
+});
+if (html.ok) console.log(html.output);
 ```
 
 `FractalLeanCanvas` is the TypeBox schema (`typebox` 1.x); use `Type.Static`-compatible types from the same export name for typing.
@@ -64,13 +70,17 @@ if (md.ok) console.log(md.markdown);
 
 ```bash
 npx flc validate ./recommended
-npx flc markdown ./recommended          # ecosystem → markdown on stdout
-npx flc markdown ./recommended/nodes/x.json
+npx flc markdown ./recommended/root.json          # one canvas (lists + headings)
+npx flc markdown ./recommended -r                 # follow node ids
+npx flc html-table ./recommended/root.json        # classic Lean Canvas HTML
+npx flc html-table ./recommended -r
+npx flc json ./recommended/root.json              # one canvas as versioned envelope
+npx flc json ./recommended -r                     # envelope with every node inlined
 # or after build:
 npm run validate   # validates ./fixtures/recommended
 ```
 
-Exit `0` on success, non-zero with path + message diagnostics on failure. `markdown` writes the document to stdout.
+Exit `0` on success, non-zero with path + message diagnostics on failure. `markdown` / `html-table` / `json` write to stdout. Recursive expansion requires `-r` / `--recursive`.
 
 ## Document layout
 
@@ -84,13 +94,13 @@ Exit `0` on success, non-zero with path + message diagnostics on failure. `markd
 }
 ```
 
-**Child files** — bare `FractalLeanCanvas` objects (no envelope). Nest slots point at them by canvas `id`:
+**Child files** — bare `FractalLeanCanvas` objects (no envelope). Line items share one shape (`id`, `title`, optional `value` / `detail` / `node`). Node slots point at canvases by id:
 
 ```json
-"executionCanvas": { "id": "exec-on-demand-dispatch" }
+"node": { "id": "exec-on-demand-dispatch" }
 ```
 
-Nest ids must match another bare canvas’s `id`, must be unique across the ecosystem, and must not target the root canvas. See [`fixtures/recommended`](fixtures/recommended) (classic Uber Lean Canvas + nested nodes).
+Node ids must match another bare canvas’s `id`, must be unique across the ecosystem, and must not target the root canvas. Humans/agents should read `title` (and `value`); treat line-item `id` as machine-only. See [`fixtures/recommended`](fixtures/recommended) (classic Uber Lean Canvas + child nodes).
 
 ## What validation covers
 
@@ -98,9 +108,9 @@ Nest ids must match another bare canvas’s `id`, must be unique across the ecos
 | ---------- | ------------------------------------------------------------------------------------------------------------ |
 | Structural | Root = envelope; other `.json` = bare canvas                                                                 |
 | Semantic   | Unique `id`s, max depth (`16`), cycle guard, cost rollups (child expenses ≤ parent / mitigation ≤ line item) |
-| Ecosystem  | Requires `root.json`; resolves `{ id }` nests; bans unreachable files; ecosystem-wide id uniqueness          |
+| Ecosystem  | Requires `root.json`; resolves `{ id }` node links; bans unreachable files; ecosystem-wide id uniqueness     |
 
-`validateDocument` validates a root envelope and does not follow nest slots. Use `validateEcosystem` / `flc validate` for the full graph.
+`validateDocument` validates a root envelope. Nested canvases under `node` are walked; `{ id }` refs need `validateEcosystem` / `flc validate`.
 
 Business-specific policy belongs in your state repo (or a future plugin), not here.
 

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://fractal-lean-canvas.local/schema/0.1.0.json",
+  "$schema": "https://github.com/huy9k/fractal-lean-canvas/tree/main/src/schema",
   "schemaVersion": "0.1.0",
   "data": {
     "id": "uber-lean-canvas",
@@ -9,29 +9,27 @@
       "topProblems": [
         {
           "id": "prob-unreliable-ride",
-          "description": "Hard to find a clean, reliable, and affordable ride in a timely manner"
+          "title": "Hard to find a clean, reliable, and affordable ride in a timely manner"
         },
         {
           "id": "prob-hail-friction",
-          "description": "Street-hailing and phone dispatch are opaque — unknown ETA, cash hassle, no trip trail"
+          "title": "Street-hailing and phone dispatch are opaque — unknown ETA, cash hassle, no trip trail"
         },
         {
           "id": "prob-driver-idle",
-          "description": "Drivers lack flexible demand and spend too much time idle or chasing radio dispatch"
+          "title": "Drivers lack flexible demand and spend too much time idle or chasing radio dispatch"
         }
       ],
       "existingAlternatives": [
+        { "id": "alt-taxis", "title": "Traditional taxis" },
+        { "id": "alt-transit", "title": "Public transportation" },
         {
-          "description": "Traditional taxis"
+          "id": "alt-own-car",
+          "title": "Rental cars / personal cars / walking"
         },
         {
-          "description": "Public transportation"
-        },
-        {
-          "description": "Rental cars / personal cars / walking"
-        },
-        {
-          "description": "Other ride-hailing (later: Lyft and local clones)"
+          "id": "alt-other-hail",
+          "title": "Other ride-hailing (later: Lyft and local clones)"
         }
       ]
     },
@@ -39,111 +37,107 @@
       "features": [
         {
           "id": "feat-on-demand-dispatch",
-          "description": "Mobile app that matches riders with nearby drivers in minutes",
-          "executionCanvas": { "id": "exec-on-demand-dispatch" }
+          "title": "Mobile app that matches riders with nearby drivers in minutes",
+          "node": { "id": "exec-on-demand-dispatch" }
         },
         {
           "id": "feat-cashless-pay",
-          "description": "Cashless card payment with automatic receipts"
+          "title": "Cashless card payment with automatic receipts"
         },
         {
           "id": "feat-gps-ratings",
-          "description": "Live GPS tracking, ETAs, trip history, and two-sided ratings"
+          "title": "Live GPS tracking, ETAs, trip history, and two-sided ratings"
         }
       ]
     },
     "customerSegments": {
       "targetUsers": [
         {
-          "personaName": "Urban dwellers who need fast, dependable trips across the city"
+          "id": "seg-urban",
+          "title": "Urban dwellers who need fast, dependable trips across the city"
         },
         {
-          "personaName": "Business travelers who want a professional, on-demand car"
+          "id": "seg-business",
+          "title": "Business travelers who want a professional, on-demand car"
         },
         {
-          "personaName": "Night-out riders when transit is sparse or unreliable"
+          "id": "seg-nightlife",
+          "title": "Night-out riders when transit is sparse or unreliable"
         }
       ],
       "earlyAdopters": [
-        "tech-savvy-sf-urbanites",
-        "frequent-taxi-users-unhappy-with-service",
-        "event-and-nightlife-crowds"
+        { "id": "adopt-sf-tech", "title": "Tech-savvy SF urbanites" },
+        {
+          "id": "adopt-taxi-unhappy",
+          "title": "Frequent taxi users unhappy with service"
+        },
+        { "id": "adopt-nightlife", "title": "Event and nightlife crowds" }
       ]
     },
     "valueProposition": {
-      "statement": "The smartest way to get around — tap a button, get a safe reliable ride in minutes",
-      "highLevelConceptCanvas": { "id": "concept-personal-driver" }
+      "id": "uvp-smartest-way",
+      "title": "The smartest way to get around — tap a button, get a safe reliable ride in minutes",
+      "node": { "id": "concept-personal-driver" }
     },
     "channels": {
       "paths": [
         {
-          "description": "Mobile app stores (iOS then Android)"
+          "id": "chan-app-stores",
+          "title": "Mobile app stores (iOS then Android)"
         },
+        { "id": "chan-pr", "title": "PR and early-adopter blogs / social" },
+        { "id": "chan-wom", "title": "Word of mouth and rider referral codes" },
         {
-          "description": "PR and early-adopter blogs / social"
-        },
-        {
-          "description": "Word of mouth and rider referral codes"
-        },
-        {
-          "description": "City launch ops — free rides at tech events and partnerships"
+          "id": "chan-city-launch",
+          "title": "City launch ops — free rides at tech events and partnerships"
         }
       ]
     },
     "costStructure": {
       "expenses": [
+        { "id": "exp-city-gm", "title": "City GM / ops wages", "value": 25000 },
         {
-          "description": "City GM / ops wages",
-          "amountUsd": 25000
+          "id": "exp-infra",
+          "title": "App, web, SMS, and mapping infrastructure",
+          "value": 40000
         },
         {
-          "description": "App, web, SMS, and mapping infrastructure",
-          "amountUsd": 40000
+          "id": "exp-driver-incentives",
+          "title": "Driver incentives and launch subsidies",
+          "value": 30000
         },
         {
-          "description": "Driver incentives and launch subsidies",
-          "amountUsd": 30000
-        },
-        {
-          "description": "Insurance, legal, and local compliance",
-          "amountUsd": 15000
+          "id": "exp-compliance",
+          "title": "Insurance, legal, and local compliance",
+          "value": 15000
         }
       ]
     },
     "revenueStreams": {
       "returns": [
         {
-          "description": "Commission take-rate on every completed trip",
-          "valueUsd": 120000
+          "id": "rev-take-rate",
+          "title": "Commission take-rate on every completed trip",
+          "value": 120000
         },
         {
-          "description": "Surge pricing during peak demand",
-          "valueUsd": 20000
+          "id": "rev-surge",
+          "title": "Surge pricing during peak demand",
+          "value": 20000
         }
       ]
     },
     "keyMetrics": {
       "kpis": [
-        {
-          "metricName": "daily_active_riders",
-          "targetValue": 1000
-        },
-        {
-          "metricName": "trips_per_day",
-          "targetValue": 3000
-        },
-        {
-          "metricName": "driver_utilization",
-          "targetValue": 0.7
-        },
-        {
-          "metricName": "avg_ride_rating",
-          "targetValue": 4.8
-        }
+        { "id": "kpi-dau", "title": "Daily active riders", "value": 1000 },
+        { "id": "kpi-trips", "title": "Trips per day", "value": 3000 },
+        { "id": "kpi-util", "title": "Driver utilization", "value": 0.7 },
+        { "id": "kpi-rating", "title": "Avg ride rating", "value": 4.8 }
       ]
     },
     "unfairAdvantage": {
-      "moatDescription": "Two-sided network effects plus brand trust in ‘push-button reliable rides’ — hard to copy once density exists"
+      "id": "moat-network",
+      "title": "Two-sided network effects plus brand trust in ‘push-button reliable rides’ — hard to copy once density exists"
     }
   }
 }
