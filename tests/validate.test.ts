@@ -104,11 +104,11 @@ describe("FLC validation", () => {
       ),
     );
     await writeFile(
-      join(dir, "a.json"),
+      join(dir, "a.flc.json"),
       JSON.stringify(blankCanvas({ id: "shared-id", title: "A" })),
     );
     await writeFile(
-      join(dir, "b.json"),
+      join(dir, "b.flc.json"),
       JSON.stringify(blankCanvas({ id: "shared-id", title: "B" })),
     );
     const result = await validateEcosystem(dir);
@@ -143,7 +143,7 @@ describe("FLC validation", () => {
     for (let depth = 1; depth <= MAX_CANVAS_DEPTH + 1; depth++) {
       const isLeaf = depth === MAX_CANVAS_DEPTH + 1;
       await writeFile(
-        join(dir, `node-${depth}.json`),
+        join(dir, `node-${depth}.flc.json`),
         JSON.stringify(
           blankCanvas({
             id: `node-${depth}`,
@@ -175,7 +175,7 @@ describe("FLC validation", () => {
       JSON.stringify(envelope(blankCanvas({ id: "root", title: "Root" }))),
     );
     await writeFile(
-      join(dir, "orphan.json"),
+      join(dir, "orphan.flc.json"),
       JSON.stringify(blankCanvas({ id: "orphan", title: "Orphan" })),
     );
     const result = await validateEcosystem(dir);
@@ -188,7 +188,7 @@ describe("FLC validation", () => {
   it("rejects missing root.json", async () => {
     const dir = await mkdtemp(join(tmpdir(), "flc-"));
     await writeFile(
-      join(dir, "orphan.json"),
+      join(dir, "orphan.flc.json"),
       JSON.stringify(blankCanvas({ id: "x", title: "X" })),
     );
     const result = await validateEcosystem(dir);
@@ -219,7 +219,7 @@ describe("FLC validation", () => {
       ),
     );
     await writeFile(
-      join(dir, "child.json"),
+      join(dir, "child.flc.json"),
       JSON.stringify(envelope(blankCanvas({ id: "child", title: "Child" }))),
     );
     const result = await validateEcosystem(dir);
@@ -279,7 +279,7 @@ describe("FLC validation", () => {
       ),
     );
     await writeFile(
-      join(dir, "a.json"),
+      join(dir, "a.flc.json"),
       JSON.stringify(
         blankCanvas({
           id: "canvas-a",
@@ -297,7 +297,7 @@ describe("FLC validation", () => {
       ),
     );
     await writeFile(
-      join(dir, "b.json"),
+      join(dir, "b.flc.json"),
       JSON.stringify(
         blankCanvas({
           id: "canvas-b",

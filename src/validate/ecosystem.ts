@@ -28,7 +28,7 @@ type LoadedDocument = {
 };
 
 /**
- * Recursively list .json files under a directory.
+ * Recursively list .flc.json files under a directory.
  */
 async function collectJsonFiles(dir: string): Promise<string[]> {
   const entries = await readdir(dir, { withFileTypes: true });
@@ -40,7 +40,7 @@ async function collectJsonFiles(dir: string): Promise<string[]> {
       files.push(...(await collectJsonFiles(full)));
       continue;
     }
-    if (entry.isFile() && entry.name.endsWith(".json")) {
+    if (entry.isFile() && entry.name.endsWith(".flc.json")) {
       files.push(full);
     }
   }

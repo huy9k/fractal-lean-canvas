@@ -16,7 +16,7 @@ const HELP = `Usage: fractal-lean-canvas <command>
 
 Commands:
   validate <path>              Validate an FLC ecosystem
-                               <path> is a directory containing root.json, or root.json itself
+                               <path> is a directory containing root.flc.json, or root.flc.json itself
                                Recommended: ./recommended with nested bare JSON under ./recommended/nodes/
   markdown <path> [-r]         Render list/heading markdown (stdout)
   html-table <path> [-r]       Render classic Lean Canvas as pure HTML (stdout)

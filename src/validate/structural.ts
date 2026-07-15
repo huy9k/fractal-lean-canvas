@@ -10,7 +10,7 @@ export type StructuralIssue = {
 };
 
 /** Required name for the single versioned document in an ecosystem. */
-export const ROOT_FILE_NAME = "root.json";
+export const ROOT_FILE_NAME = "root.flc.json";
 
 /**
  * Detect whether a value looks like a VersionedFractalEnvelope.
