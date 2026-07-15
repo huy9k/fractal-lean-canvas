@@ -1,5 +1,4 @@
 import type { CanvasSlot, FractalLeanCanvas } from "../schema/canvas.js";
-import { isFileCanvasRef } from "../schema/canvas.js";
 
 export const MAX_CANVAS_DEPTH = 16;
 
@@ -19,9 +18,9 @@ export type NestedCanvasSlot = {
  * Options for graph-aware semantic walks (used by ecosystem validation).
  */
 export type SemanticWalkOptions = {
-  /** Resolve a relative file ref to a canvas; return an issue on failure. */
-  resolveFileRef?: (
-    ref: string,
+  /** Resolve a canvas id to a document; return an issue on failure. */
+  resolveCanvasId?: (
+    canvasId: string,
     fromFile: string,
     slotPath: string,
   ) => { canvas: FractalLeanCanvas; file: string } | SemanticIssue;
@@ -36,7 +35,7 @@ export type SemanticWalkOptions = {
 };
 
 /**
- * Collect direct child nest slots (inline canvases or `{ ref }`).
+ * Collect direct child nest slots (`{ id }` only).
  */
 export function collectCanvasSlots(
   canvas: FractalLeanCanvas,
@@ -117,20 +116,6 @@ export function collectCanvasSlots(
   return slots;
 }
 
-/** Reject absolute paths and URI schemes for file refs. */
-export function relativeRefIssue(ref: string): string | undefined {
-  if (ref.startsWith("/") || /^[a-zA-Z]:[\\/]/.test(ref)) {
-    return "File ref must be a relative path";
-  }
-  if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(ref)) {
-    return "File ref must not use a URI scheme";
-  }
-  if (ref.includes("\\")) {
-    return "File ref must use forward slashes";
-  }
-  return undefined;
-}
-
 /** Sum expense amounts on a canvas. */
 function expenseTotal(canvas: FractalLeanCanvas): number {
   return canvas.costStructure.expenses.reduce((sum, e) => sum + e.amountUsd, 0);
@@ -138,7 +123,7 @@ function expenseTotal(canvas: FractalLeanCanvas): number {
 
 /**
  * Semantic rules: unique ids, max depth, cycle guard, budget rollups.
- * Without `resolveFileRef`, file refs are shape-checked only (not followed).
+ * Without `resolveCanvasId`, nest slots are not followed.
  */
 export function validateSemantic(
   root: FractalLeanCanvas,
@@ -151,7 +136,7 @@ export function validateSemantic(
   const idsRegisteredFor = options.idsRegisteredFor ?? new WeakSet<object>();
   const startFile = options.file ?? "";
   const dfsStack = new Set<object>();
-  const fileStack: string[] = startFile ? [startFile] : [];
+  const idStack: string[] = [];
 
   if (startFile) walkedFiles.add(startFile);
 
@@ -177,50 +162,29 @@ export function validateSemantic(
     seenIds.set(id, file ? `${file}:${path}` : path);
   };
 
-  /** Resolve a nest slot to a canvas; emits issues and returns undefined on failure/skip. */
+  /** Resolve an id nest slot; emits issues and returns undefined on failure/skip. */
   const resolveChild = (
     slot: CanvasSlot,
     slotPath: string,
     fromFile: string,
   ): { canvas: FractalLeanCanvas; file: string } | undefined => {
-    if (!isFileCanvasRef(slot)) {
-      return { canvas: slot, file: fromFile };
-    }
+    // Single-document mode: do not follow nest slots.
+    if (!options.resolveCanvasId) return undefined;
 
-    const badRef = relativeRefIssue(slot.ref);
-    if (badRef) {
-      pushIssue({ path: slotPath, message: badRef }, fromFile);
-      return undefined;
-    }
-
-    // Single-document mode: do not follow file refs.
-    if (!options.resolveFileRef) return undefined;
-
-    if (!fromFile) {
+    if (idStack.includes(slot.id)) {
       pushIssue(
         {
           path: slotPath,
-          message: "Cannot resolve file ref without a source file path",
+          message: `Cycle detected via canvas id "${slot.id}"`,
         },
         fromFile,
       );
       return undefined;
     }
 
-    const result = options.resolveFileRef(slot.ref, fromFile, slotPath);
+    const result = options.resolveCanvasId(slot.id, fromFile, slotPath);
     if ("message" in result) {
       pushIssue(result, fromFile);
-      return undefined;
-    }
-
-    if (fileStack.includes(result.file)) {
-      pushIssue(
-        {
-          path: slotPath,
-          message: `Cycle detected via file ref "${slot.ref}"`,
-        },
-        fromFile,
-      );
       return undefined;
     }
 
@@ -238,6 +202,7 @@ export function validateSemantic(
       return;
     }
     dfsStack.add(canvas);
+    idStack.push(canvas.id);
 
     if (depth > MAX_CANVAS_DEPTH) {
       pushIssue(
@@ -247,11 +212,12 @@ export function validateSemantic(
         },
         file,
       );
+      idStack.pop();
       dfsStack.delete(canvas);
       return;
     }
 
-    // Register ids once per canvas object (re-entry via another ref skips).
+    // Register ids once per canvas object (re-entry via another nest skips).
     if (!idsRegisteredFor.has(canvas)) {
       idsRegisteredFor.add(canvas);
       registerId(canvas.id, `${path}/id`, file);
@@ -308,16 +274,12 @@ export function validateSemantic(
         );
       }
 
-      const enteredNewFile =
-        isFileCanvasRef(child.slot) && resolved.file !== file;
-      if (enteredNewFile) {
-        fileStack.push(resolved.file);
-        walkedFiles.add(resolved.file);
-      }
+      const enteredNewFile = resolved.file !== file;
+      if (enteredNewFile) walkedFiles.add(resolved.file);
       walk(resolved.canvas, child.path, depth + 1, resolved.file);
-      if (enteredNewFile) fileStack.pop();
     }
 
+    idStack.pop();
     dfsStack.delete(canvas);
   };
 

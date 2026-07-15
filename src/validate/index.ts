@@ -9,7 +9,6 @@ export {
 export {
   validateSemantic,
   collectCanvasSlots,
-  relativeRefIssue,
   MAX_CANVAS_DEPTH,
   type SemanticIssue,
   type SemanticWalkOptions,

@@ -49,7 +49,7 @@ export function validateStructural(value: unknown): StructuralIssue[] {
 }
 
 /**
- * Run TypeBox structural checks against a bare FractalLeanCanvas (ref targets).
+ * Run TypeBox structural checks against a bare FractalLeanCanvas (nest targets).
  */
 export function validateCanvasStructural(value: unknown): StructuralIssue[] {
   if (isEnvelope(value)) {

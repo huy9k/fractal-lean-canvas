@@ -1,12 +1,5 @@
 import { readdir, readFile, stat } from "node:fs/promises";
-import {
-  basename,
-  dirname,
-  join,
-  normalize,
-  relative,
-  resolve,
-} from "node:path";
+import { basename, dirname, join, normalize, relative, resolve } from "node:path";
 import {
   ROOT_FILE_NAME,
   isEnvelope,
@@ -111,7 +104,7 @@ async function locateRoot(
 }
 
 /**
- * Validate a single root envelope document (file refs are not followed).
+ * Validate a single root envelope document (canvas id nests are not followed).
  */
 export function validateDocument(
   value: unknown,
@@ -133,7 +126,7 @@ export function validateDocument(
 }
 
 /**
- * Lint a single-root ecosystem: root.json (envelope) + bare canvas ref targets.
+ * Lint a single-root ecosystem: root.json (envelope) + bare canvases linked by id.
  */
 export async function validateEcosystem(
   targetPath: string,
@@ -230,37 +223,38 @@ export async function validateEcosystem(
     };
   }
 
-  // Refuse refs that target the root envelope file.
-  const resolveFileRef = (
-    ref: string,
-    fromFile: string,
+  // Index canvases by id (file tree is layout-only).
+  const byCanvasId = new Map<string, LoadedDocument>();
+  for (const doc of documents.values()) {
+    const prior = byCanvasId.get(doc.canvas.id);
+    if (prior) {
+      issues.push({
+        file: doc.label,
+        path: "/id",
+        message: `Duplicate canvas id "${doc.canvas.id}" (also in ${prior.label})`,
+      });
+      continue;
+    }
+    byCanvasId.set(doc.canvas.id, doc);
+  }
+
+  const resolveCanvasId = (
+    canvasId: string,
+    _fromFile: string,
     slotPath: string,
   ): { canvas: FractalLeanCanvas; file: string } | SemanticIssue => {
-    const fromDoc = [...documents.values()].find((d) => d.label === fromFile);
-    const fromAbsolute =
-      fromDoc?.absolutePath ??
-      (fromFile.endsWith(".json") ? normalize(resolve(fromFile)) : "");
-
-    if (!fromAbsolute) {
+    if (canvasId === rootDoc!.canvas.id) {
       return {
         path: slotPath,
-        message: `Cannot resolve ref "${ref}" (unknown source file)`,
+        message: `Canvas id ref must not target the root canvas (${ROOT_FILE_NAME})`,
       };
     }
 
-    const targetAbsolute = normalize(resolve(dirname(fromAbsolute), ref));
-    if (targetAbsolute === rootAbsolute) {
-      return {
-        path: slotPath,
-        message: `File ref must not target ${ROOT_FILE_NAME} (bare canvas only)`,
-      };
-    }
-
-    const target = documents.get(targetAbsolute);
+    const target = byCanvasId.get(canvasId);
     if (!target) {
       return {
         path: slotPath,
-        message: `Missing file ref "${ref}" (resolved ${relative(process.cwd(), targetAbsolute) || targetAbsolute})`,
+        message: `Missing canvas id "${canvasId}"`,
       };
     }
     return { canvas: target.canvas, file: target.label };
@@ -276,7 +270,7 @@ export async function validateEcosystem(
     seenIds,
     walkedFiles,
     idsRegisteredFor,
-    resolveFileRef,
+    resolveCanvasId,
   });
 
   for (const issue of semanticIssues) {

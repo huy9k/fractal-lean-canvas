@@ -1,0 +1,74 @@
+{
+  "id": "concept-personal-driver",
+  "title": "High-level concept: personal driver in your pocket",
+  "ownerId": "human",
+  "problem": {
+    "topProblems": [
+      {
+        "id": "prob-explain-uber",
+        "description": "Need a one-line story strangers remember after one demo ride"
+      }
+    ],
+    "existingAlternatives": [
+      {
+        "description": "Call a limo company"
+      },
+      {
+        "description": "Hail a yellow cab"
+      }
+    ]
+  },
+  "solution": {
+    "features": [
+      {
+        "id": "feat-one-liner",
+        "description": "Pitch: UberBlack / on-demand car service via iPhone — your personal driver in your pocket"
+      }
+    ]
+  },
+  "customerSegments": {
+    "targetUsers": [
+      {
+        "personaName": "Investors, press, and first SF riders hearing the pitch"
+      }
+    ],
+    "earlyAdopters": ["vc-event-attendees", "early-adopter-bloggers"]
+  },
+  "valueProposition": {
+    "statement": "On-demand private rides at the push of a button"
+  },
+  "channels": {
+    "paths": [
+      {
+        "description": "Founder demos and free rides at tech/VC events"
+      }
+    ]
+  },
+  "costStructure": {
+    "expenses": [
+      {
+        "description": "Demo / subsidy rides for influencers",
+        "amountUsd": 5000
+      }
+    ]
+  },
+  "revenueStreams": {
+    "returns": [
+      {
+        "description": "Viral WOM from memorable first rides",
+        "valueUsd": 0
+      }
+    ]
+  },
+  "keyMetrics": {
+    "kpis": [
+      {
+        "metricName": "pitch_recall_rate",
+        "targetValue": 0.8
+      }
+    ]
+  },
+  "unfairAdvantage": {
+    "moatDescription": "Category-defining one-liner before the market is crowded"
+  }
+}

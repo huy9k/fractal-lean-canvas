@@ -9,10 +9,7 @@ import {
   validateDocument,
   validateEcosystem,
 } from "../src/validate/ecosystem.js";
-import {
-  validateSemantic,
-  MAX_CANVAS_DEPTH,
-} from "../src/validate/semantic.js";
+import { MAX_CANVAS_DEPTH } from "../src/validate/semantic.js";
 import {
   ROOT_FILE_NAME,
   validateStructural,
@@ -28,9 +25,7 @@ function blankCanvas(
     Pick<FractalLeanCanvas, "id" | "title">,
 ): FractalLeanCanvas {
   return {
-    layerDepth: 0,
     ownerId: "human",
-    lastUpdatedIso: "2026-07-14T00:00:00.000Z",
     problem: { topProblems: [], existingAlternatives: [] },
     solution: { features: [] },
     customerSegments: { targetUsers: [], earlyAdopters: [] },
@@ -60,10 +55,10 @@ describe("FLC validation", () => {
     assert.equal(issues.length, 0);
   });
 
-  it("validateEcosystem resolves cross-file refs in fixtures/", async () => {
+  it("validateEcosystem resolves nest ids in fixtures/", async () => {
     const result = await validateEcosystem(join(ROOT, "fixtures"));
     assert.equal(result.ok, true, JSON.stringify(result.issues, null, 2));
-    assert.ok(result.filesChecked >= 2);
+    assert.ok(result.filesChecked >= 3);
   });
 
   it("rejects bare canvas when envelope is required", () => {
@@ -82,71 +77,92 @@ describe("FLC validation", () => {
     assert.ok(issues.length > 0);
   });
 
-  it("rejects duplicate ids across the tree", () => {
-    const child = blankCanvas({
-      id: "shared-id",
-      title: "Child",
-      layerDepth: 1,
-    });
-    const parent = blankCanvas({
-      id: "shared-id",
-      title: "Parent",
-      solution: {
-        features: [
-          {
-            id: "feat-1",
-            description: "nested",
-            executionCanvas: child,
-          },
-        ],
-      },
-    });
-    const issues = validateSemantic(parent);
-    assert.ok(issues.some((i) => i.message.includes("Duplicate id")));
-  });
-
-  it("rejects over-deep nesting", () => {
-    let canvas = blankCanvas({
-      id: "leaf",
-      title: "Leaf",
-      layerDepth: MAX_CANVAS_DEPTH + 1,
-    });
-    for (let depth = MAX_CANVAS_DEPTH; depth >= 0; depth--) {
-      canvas = blankCanvas({
-        id: `node-${depth}`,
-        title: `Node ${depth}`,
-        layerDepth: depth,
-        solution: {
-          features: [
-            {
-              id: `feat-${depth}`,
-              description: "nest",
-              executionCanvas: canvas,
+  it("rejects duplicate canvas ids across files", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "flc-"));
+    await writeFile(
+      join(dir, ROOT_FILE_NAME),
+      JSON.stringify(
+        envelope(
+          blankCanvas({
+            id: "root",
+            title: "Root",
+            solution: {
+              features: [
+                {
+                  id: "feat-1",
+                  description: "nested",
+                  executionCanvas: { id: "shared-id" },
+                },
+              ],
             },
-          ],
-        },
-      });
-    }
-    const issues = validateSemantic(canvas);
-    assert.ok(issues.some((i) => i.message.includes("exceeds max")));
+          }),
+        ),
+      ),
+    );
+    await writeFile(
+      join(dir, "a.json"),
+      JSON.stringify(blankCanvas({ id: "shared-id", title: "A" })),
+    );
+    await writeFile(
+      join(dir, "b.json"),
+      JSON.stringify(blankCanvas({ id: "shared-id", title: "B" })),
+    );
+    const result = await validateEcosystem(dir);
+    assert.equal(result.ok, false);
+    assert.ok(
+      result.issues.some((i) => i.message.includes("Duplicate canvas id")),
+    );
   });
 
-  it("rejects absolute file refs", () => {
-    const parent = blankCanvas({
-      id: "parent",
-      title: "Parent",
-      solution: {
-        features: [
-          {
-            id: "feat-1",
-            description: "nested",
-            executionCanvas: { ref: "/tmp/other.json" },
-          },
-        ],
-      },
-    });
-    const issues = validateSemantic(parent);
-    assert.ok(issues.some((i) => i.message.includes("relative path")));
+  it("rejects over-deep nesting", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "flc-"));
+    // Root (depth 0) → node-1 → … → node-(MAX+1) exceeds max depth.
+    await writeFile(
+      join(dir, ROOT_FILE_NAME),
+      JSON.stringify(
+        envelope(
+          blankCanvas({
+            id: "node-0",
+            title: "Node 0",
+            solution: {
+              features: [
+                {
+                  id: "feat-0",
+                  description: "nest",
+                  executionCanvas: { id: "node-1" },
+                },
+              ],
+            },
+          }),
+        ),
+      ),
+    );
+    for (let depth = 1; depth <= MAX_CANVAS_DEPTH + 1; depth++) {
+      const isLeaf = depth === MAX_CANVAS_DEPTH + 1;
+      await writeFile(
+        join(dir, `node-${depth}.json`),
+        JSON.stringify(
+          blankCanvas({
+            id: `node-${depth}`,
+            title: `Node ${depth}`,
+            solution: isLeaf
+              ? { features: [] }
+              : {
+                  features: [
+                    {
+                      id: `feat-${depth}`,
+                      description: "nest",
+                      executionCanvas: { id: `node-${depth + 1}` },
+                    },
+                  ],
+                },
+          }),
+        ),
+      );
+    }
+    const result = await validateEcosystem(dir);
+    assert.equal(result.ok, false);
+    assert.ok(result.issues.some((i) => i.message.includes("exceeds max")));
   });
 
   it("rejects unreachable orphan canvas files", async () => {
@@ -191,7 +207,7 @@ describe("FLC validation", () => {
                 {
                   id: "feat-1",
                   description: "child",
-                  executionCanvas: { ref: "./child.json" },
+                  executionCanvas: { id: "child" },
                 },
               ],
             },
@@ -208,7 +224,7 @@ describe("FLC validation", () => {
     assert.ok(result.issues.some((i) => i.message.includes("bare canvases")));
   });
 
-  it("rejects missing file refs in ecosystem", async () => {
+  it("rejects missing canvas ids in ecosystem", async () => {
     const dir = await mkdtemp(join(tmpdir(), "flc-"));
     await writeFile(
       join(dir, ROOT_FILE_NAME),
@@ -222,7 +238,7 @@ describe("FLC validation", () => {
                 {
                   id: "feat-1",
                   description: "missing child",
-                  executionCanvas: { ref: "./missing.json" },
+                  executionCanvas: { id: "does-not-exist" },
                 },
               ],
             },
@@ -233,11 +249,11 @@ describe("FLC validation", () => {
     const result = await validateEcosystem(dir);
     assert.equal(result.ok, false);
     assert.ok(
-      result.issues.some((i) => i.message.includes("Missing file ref")),
+      result.issues.some((i) => i.message.includes("Missing canvas id")),
     );
   });
 
-  it("rejects cyclic file refs in ecosystem", async () => {
+  it("rejects cyclic canvas ids in ecosystem", async () => {
     const dir = await mkdtemp(join(tmpdir(), "flc-"));
     await writeFile(
       join(dir, ROOT_FILE_NAME),
@@ -251,7 +267,7 @@ describe("FLC validation", () => {
                 {
                   id: "feat-root",
                   description: "to a",
-                  executionCanvas: { ref: "./a.json" },
+                  executionCanvas: { id: "canvas-a" },
                 },
               ],
             },
@@ -270,7 +286,7 @@ describe("FLC validation", () => {
               {
                 id: "feat-a",
                 description: "to b",
-                executionCanvas: { ref: "./b.json" },
+                executionCanvas: { id: "canvas-b" },
               },
             ],
           },
@@ -288,7 +304,7 @@ describe("FLC validation", () => {
               {
                 id: "feat-b",
                 description: "to a",
-                executionCanvas: { ref: "./a.json" },
+                executionCanvas: { id: "canvas-a" },
               },
             ],
           },
