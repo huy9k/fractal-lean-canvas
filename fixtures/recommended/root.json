@@ -1,6 +1,6 @@
 {
-  "$schema": "https://github.com/huy9k/fractal-lean-canvas/tree/main/src/schema",
-  "schemaVersion": "0.1.0",
+  "$schema": "https://raw.githubusercontent.com/huy9k/fractal-lean-canvas/raw-schema-json/envelope-0.7.0.json",
+  "schemaVersion": "0.7.0",
   "data": {
     "id": "uber-lean-canvas",
     "title": "Uber (early Lean Canvas)",

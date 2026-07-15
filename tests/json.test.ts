@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { inlineCanvasNodes, jsonCanvas } from "../src/json/inline.js";
 import { jsonFromPath } from "../src/markdown/fromPath.js";
 import type { FractalLeanCanvas } from "../src/schema/canvas.js";
+import { SCHEMA_VERSION } from "../src/schema/envelope.js";
 import { validateDocument } from "../src/validate/ecosystem.js";
 import { ROOT_FILE_NAME } from "../src/validate/structural.js";
 
@@ -23,7 +24,7 @@ describe("FLC json", () => {
       schemaVersion: string;
       data: FractalLeanCanvas;
     };
-    assert.equal(parsed.schemaVersion, "0.1.0");
+    assert.equal(parsed.schemaVersion, SCHEMA_VERSION);
     assert.ok(parsed.$schema.length > 0);
     assert.equal(parsed.data.id, "uber-lean-canvas");
     const feature = parsed.data.solution.features.find(
@@ -53,7 +54,7 @@ describe("FLC json", () => {
         valueProposition: { node?: { id: string; title?: string } };
       };
     };
-    assert.equal(parsed.schemaVersion, "0.1.0");
+    assert.equal(parsed.schemaVersion, SCHEMA_VERSION);
     const feature = parsed.data.solution.features.find(
       (f) => f.id === "feat-on-demand-dispatch",
     );
@@ -134,7 +135,7 @@ describe("FLC json", () => {
       unfairAdvantage: { id: "moat", title: "m" },
     };
     const out = jsonCanvas(canvas);
-    assert.match(out, /"schemaVersion": "0.1.0"/);
+    assert.match(out, new RegExp(`"schemaVersion": "${SCHEMA_VERSION}"`));
     assert.match(out, /"id": "x"/);
     assert.ok(out.endsWith("\n"));
   });

@@ -1,9 +1,10 @@
 import Type from "typebox";
+import pkg from "../../package.json" with { type: "json" };
 import { FractalLeanCanvas } from "./canvas.js";
 import type { FractalLeanCanvas as Canvas } from "./canvas.js";
 
 /** Current FLC schema version literal. */
-export const SCHEMA_VERSION = "0.1.0" as const;
+export const SCHEMA_VERSION = pkg.version;
 
 export type SchemaVersionString = typeof SCHEMA_VERSION;
 
