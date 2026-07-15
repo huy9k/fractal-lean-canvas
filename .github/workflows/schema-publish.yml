@@ -36,18 +36,18 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           
-          # Update root.json schema references
+          # Update root.flc.json schema references
           node --input-type=module -e "
             import fs from 'node:fs';
             import { SCHEMA_VERSION, DEFAULT_SCHEMA_URI } from './dist/schema/envelope.js';
-            const file = './fixtures/recommended/root.json';
+            const file = './fixtures/recommended/root.flc.json';
             const doc = JSON.parse(fs.readFileSync(file, 'utf8'));
             doc.\$schema = DEFAULT_SCHEMA_URI;
             doc.schemaVersion = SCHEMA_VERSION;
             fs.writeFileSync(file, JSON.stringify(doc, null, 2) + '\n');
           "
           
-          git add fixtures/recommended/root.json
+          git add fixtures/recommended/root.flc.json
           if ! git diff --cached --quiet; then
             git commit -m "chore: update recommended fixture schema reference"
             git push origin main
