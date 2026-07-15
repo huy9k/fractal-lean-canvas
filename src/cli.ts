@@ -12,7 +12,7 @@ const { version } = createRequire(import.meta.url)("../package.json") as {
   version: string;
 };
 
-const HELP = `Usage: flc <command>
+const HELP = `Usage: fractal-lean-canvas <command>
 
 Commands:
   validate <path>              Validate an FLC ecosystem
@@ -42,7 +42,7 @@ function printVersion(): never {
 }
 
 /**
- * CLI entry: `flc validate|markdown|html-table|json <path>`
+ * CLI entry: `fractal-lean-canvas validate|markdown|html-table|json <path>`
  */
 async function main(): Promise<void> {
   const args = process.argv.slice(2);

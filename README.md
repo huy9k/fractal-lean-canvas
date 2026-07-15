@@ -16,7 +16,7 @@ Requires Node.js 20+.
 
 ## Concepts
 
-1. **One recursive shape** — Every node is a `FractalLeanCanvas` with the nine Lean Canvas dimensions. On disk, child links are `{ "id": "canvas-id" }` on line-item `node` (one file per canvas; file tree is layout-only). Nested canvases under `node` are also schema-valid (e.g. `flc json -r`).
+1. **One recursive shape** — Every node is a `FractalLeanCanvas` with the nine Lean Canvas dimensions. On disk, child links are `{ "id": "canvas-id" }` on line-item `node` (one file per canvas; file tree is layout-only). Nested canvases under `node` are also schema-valid (e.g. `fractal-lean-canvas json -r`).
 2. **Single root** — Each ecosystem has one `root.json` versioned envelope. All other JSON files are bare canvases (no `schemaVersion`).
 3. **Homogeneous traversal** — Agents walk the same structure at enterprise depth or task depth (`validateEcosystem` resolves canvas ids from the root).
 4. **Git holds truth** — Documents are JSON in Git. Version authority lives only on `root.json`. There is no embedded commit hash.
@@ -69,13 +69,13 @@ if (html.ok) console.log(html.output);
 ## CLI
 
 ```bash
-npx flc validate ./recommended
-npx flc markdown ./recommended/root.json          # one canvas (lists + headings)
-npx flc markdown ./recommended -r                 # follow node ids
-npx flc html-table ./recommended/root.json        # classic Lean Canvas HTML
-npx flc html-table ./recommended -r
-npx flc json ./recommended/root.json              # one canvas as versioned envelope
-npx flc json ./recommended -r                     # envelope with every node inlined
+npx fractal-lean-canvas validate ./recommended
+npx fractal-lean-canvas markdown ./recommended/root.json          # one canvas (lists + headings)
+npx fractal-lean-canvas markdown ./recommended -r                 # follow node ids
+npx fractal-lean-canvas html-table ./recommended/root.json        # classic Lean Canvas HTML
+npx fractal-lean-canvas html-table ./recommended -r
+npx fractal-lean-canvas json ./recommended/root.json              # one canvas as versioned envelope
+npx fractal-lean-canvas json ./recommended -r                     # envelope with every node inlined
 # or after build:
 npm run validate   # validates ./fixtures/recommended
 ```
@@ -110,7 +110,7 @@ Node ids must match another bare canvas’s `id`, must be unique across the ecos
 | Semantic   | Unique `id`s, max depth (`16`), cycle guard, cost rollups (child expenses ≤ parent / mitigation ≤ line item) |
 | Ecosystem  | Requires `root.json`; resolves `{ id }` node links; bans unreachable files; ecosystem-wide id uniqueness     |
 
-`validateDocument` validates a root envelope. Nested canvases under `node` are walked; `{ id }` refs need `validateEcosystem` / `flc validate`.
+`validateDocument` validates a root envelope. Nested canvases under `node` are walked; `{ id }` refs need `validateEcosystem` / `fractal-lean-canvas validate`.
 
 Business-specific policy belongs in your state repo (or a future plugin), not here.
 

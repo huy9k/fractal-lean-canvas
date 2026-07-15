@@ -1,11 +1,11 @@
 {
   "name": "fractal-lean-canvas",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "TypeBox schema, types, and validators for Fractal Lean Canvas (FLC)",
   "type": "module",
   "license": "MIT",
   "bin": {
-    "flc": "./dist/cli.js"
+    "fractal-lean-canvas": "./dist/cli.js"
   },
   "exports": {
     ".": {
