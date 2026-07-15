@@ -17,7 +17,8 @@ import {
 import { SCHEMA_VERSION } from "../src/schema/envelope.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const FIXTURE = join(ROOT, "fixtures", ROOT_FILE_NAME);
+const FIXTURE_DIR = join(ROOT, "fixtures", "recommended");
+const FIXTURE = join(FIXTURE_DIR, ROOT_FILE_NAME);
 
 /** Minimal valid canvas for mutation in failure cases. */
 function blankCanvas(
@@ -51,12 +52,15 @@ function envelope(data: FractalLeanCanvas): unknown {
 describe("FLC validation", () => {
   it("accepts the root fixture", async () => {
     const raw = JSON.parse(await readFile(FIXTURE, "utf8")) as unknown;
-    const issues = validateDocument(raw, `fixtures/${ROOT_FILE_NAME}`);
+    const issues = validateDocument(
+      raw,
+      `fixtures/recommended/${ROOT_FILE_NAME}`,
+    );
     assert.equal(issues.length, 0);
   });
 
-  it("validateEcosystem resolves nest ids in fixtures/", async () => {
-    const result = await validateEcosystem(join(ROOT, "fixtures"));
+  it("validateEcosystem resolves nest ids in fixtures/recommended/", async () => {
+    const result = await validateEcosystem(FIXTURE_DIR);
     assert.equal(result.ok, true, JSON.stringify(result.issues, null, 2));
     assert.ok(result.filesChecked >= 3);
   });
