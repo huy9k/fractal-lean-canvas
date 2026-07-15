@@ -1,0 +1,626 @@
+{
+  "type": "object",
+  "required": [
+    "$schema",
+    "schemaVersion",
+    "data"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "minLength": 1
+    },
+    "schemaVersion": {
+      "type": "string",
+      "const": "0.9.3"
+    },
+    "data": {
+      "$defs": {
+        "FractalLeanCanvas": {
+          "type": "object",
+          "required": [
+            "id",
+            "title",
+            "ownerId",
+            "problem",
+            "solution",
+            "customerSegments",
+            "valueProposition",
+            "channels",
+            "costStructure",
+            "revenueStreams",
+            "keyMetrics",
+            "unfairAdvantage"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "title": {
+              "type": "string",
+              "minLength": 1
+            },
+            "ownerId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "problem": {
+              "type": "object",
+              "required": [
+                "topProblems",
+                "existingAlternatives"
+              ],
+              "properties": {
+                "topProblems": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "id",
+                      "title"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "value": {
+                        "type": "number"
+                      },
+                      "detail": {
+                        "type": "string"
+                      },
+                      "node": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "required": [
+                              "id"
+                            ],
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            },
+                            "additionalProperties": false
+                          },
+                          {
+                            "$ref": "FractalLeanCanvas"
+                          }
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "existingAlternatives": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "id",
+                      "title"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "value": {
+                        "type": "number"
+                      },
+                      "detail": {
+                        "type": "string"
+                      },
+                      "node": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "required": [
+                              "id"
+                            ],
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            },
+                            "additionalProperties": false
+                          },
+                          {
+                            "$ref": "FractalLeanCanvas"
+                          }
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                }
+              }
+            },
+            "solution": {
+              "type": "object",
+              "required": [
+                "features"
+              ],
+              "properties": {
+                "features": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "id",
+                      "title"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "value": {
+                        "type": "number"
+                      },
+                      "detail": {
+                        "type": "string"
+                      },
+                      "node": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "required": [
+                              "id"
+                            ],
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            },
+                            "additionalProperties": false
+                          },
+                          {
+                            "$ref": "FractalLeanCanvas"
+                          }
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                }
+              }
+            },
+            "customerSegments": {
+              "type": "object",
+              "required": [
+                "targetUsers",
+                "earlyAdopters"
+              ],
+              "properties": {
+                "targetUsers": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "id",
+                      "title"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "value": {
+                        "type": "number"
+                      },
+                      "detail": {
+                        "type": "string"
+                      },
+                      "node": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "required": [
+                              "id"
+                            ],
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            },
+                            "additionalProperties": false
+                          },
+                          {
+                            "$ref": "FractalLeanCanvas"
+                          }
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "earlyAdopters": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "id",
+                      "title"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "value": {
+                        "type": "number"
+                      },
+                      "detail": {
+                        "type": "string"
+                      },
+                      "node": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "required": [
+                              "id"
+                            ],
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            },
+                            "additionalProperties": false
+                          },
+                          {
+                            "$ref": "FractalLeanCanvas"
+                          }
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                }
+              }
+            },
+            "valueProposition": {
+              "type": "object",
+              "required": [
+                "id",
+                "title"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "title": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "type": "number"
+                },
+                "detail": {
+                  "type": "string"
+                },
+                "node": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "id"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    {
+                      "$ref": "FractalLeanCanvas"
+                    }
+                  ]
+                }
+              },
+              "additionalProperties": false
+            },
+            "channels": {
+              "type": "object",
+              "required": [
+                "paths"
+              ],
+              "properties": {
+                "paths": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "id",
+                      "title"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "value": {
+                        "type": "number"
+                      },
+                      "detail": {
+                        "type": "string"
+                      },
+                      "node": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "required": [
+                              "id"
+                            ],
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            },
+                            "additionalProperties": false
+                          },
+                          {
+                            "$ref": "FractalLeanCanvas"
+                          }
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                }
+              }
+            },
+            "costStructure": {
+              "type": "object",
+              "required": [
+                "expenses"
+              ],
+              "properties": {
+                "expenses": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "id",
+                      "title"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "value": {
+                        "type": "number"
+                      },
+                      "detail": {
+                        "type": "string"
+                      },
+                      "node": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "required": [
+                              "id"
+                            ],
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            },
+                            "additionalProperties": false
+                          },
+                          {
+                            "$ref": "FractalLeanCanvas"
+                          }
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                }
+              }
+            },
+            "revenueStreams": {
+              "type": "object",
+              "required": [
+                "returns"
+              ],
+              "properties": {
+                "returns": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "id",
+                      "title"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "value": {
+                        "type": "number"
+                      },
+                      "detail": {
+                        "type": "string"
+                      },
+                      "node": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "required": [
+                              "id"
+                            ],
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            },
+                            "additionalProperties": false
+                          },
+                          {
+                            "$ref": "FractalLeanCanvas"
+                          }
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                }
+              }
+            },
+            "keyMetrics": {
+              "type": "object",
+              "required": [
+                "kpis"
+              ],
+              "properties": {
+                "kpis": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "id",
+                      "title"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "value": {
+                        "type": "number"
+                      },
+                      "detail": {
+                        "type": "string"
+                      },
+                      "node": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "required": [
+                              "id"
+                            ],
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            },
+                            "additionalProperties": false
+                          },
+                          {
+                            "$ref": "FractalLeanCanvas"
+                          }
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                }
+              }
+            },
+            "unfairAdvantage": {
+              "type": "object",
+              "required": [
+                "id",
+                "title"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "title": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "type": "number"
+                },
+                "detail": {
+                  "type": "string"
+                },
+                "node": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "id"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    {
+                      "$ref": "FractalLeanCanvas"
+                    }
+                  ]
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false,
+          "$id": "FractalLeanCanvas"
+        }
+      },
+      "$ref": "FractalLeanCanvas"
+    }
+  },
+  "additionalProperties": false
+}
