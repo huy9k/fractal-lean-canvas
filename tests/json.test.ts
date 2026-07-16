@@ -2,12 +2,12 @@ import assert from "node:assert/strict";
 import { dirname, join } from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
-import { inlineCanvasNodes, jsonCanvas } from "../src/json/inline.js";
-import { jsonFromPath } from "../src/markdown/fromPath.js";
-import type { FractalLeanCanvas } from "../src/schema/canvas.js";
-import { SCHEMA_VERSION } from "../src/schema/envelope.js";
-import { validateDocument } from "../src/validate/ecosystem.js";
-import { ROOT_FILE_NAME } from "../src/validate/structural.js";
+import { inlineCanvasNodes, jsonCanvas } from "../src/shared/json/inline.js";
+import { jsonFromPath } from "../src/node/fromPath/index.js";
+import type { FractalLeanCanvas } from "../src/shared/schema/canvas.js";
+import { SCHEMA_VERSION } from "../src/shared/schema/envelope.js";
+import { validateDocument } from "../src/shared/validate/document.js";
+import { ROOT_FILE_NAME } from "../src/shared/validate/structural.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const FIXTURE_DIR = join(ROOT, "fixtures", "recommended");

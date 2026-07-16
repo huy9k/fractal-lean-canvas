@@ -4,17 +4,15 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
-import type { FractalLeanCanvas } from "../src/schema/canvas.js";
-import {
-  validateDocument,
-  validateEcosystem,
-} from "../src/validate/ecosystem.js";
-import { MAX_CANVAS_DEPTH } from "../src/validate/semantic.js";
+import type { FractalLeanCanvas } from "../src/shared/schema/canvas.js";
+import { validateDocument } from "../src/shared/validate/document.js";
+import { validateEcosystem } from "../src/node/ecosystem/index.js";
+import { MAX_CANVAS_DEPTH } from "../src/shared/validate/semantic.js";
 import {
   ROOT_FILE_NAME,
   validateStructural,
-} from "../src/validate/structural.js";
-import { SCHEMA_VERSION } from "../src/schema/envelope.js";
+} from "../src/shared/validate/structural.js";
+import { SCHEMA_VERSION } from "../src/shared/schema/envelope.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const FIXTURE_DIR = join(ROOT, "fixtures", "recommended");

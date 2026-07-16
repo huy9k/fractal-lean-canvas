@@ -1,5 +1,5 @@
 import Type from "typebox";
-import pkg from "../../package.json" with { type: "json" };
+import pkg from "../../../package.json" with { type: "json" };
 import { FractalLeanCanvas } from "./canvas.js";
 import type { FractalLeanCanvas as Canvas } from "./canvas.js";
 

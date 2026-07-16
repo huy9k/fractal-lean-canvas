@@ -14,6 +14,17 @@ npm install fractal-lean-canvas
 
 Requires Node.js 20+.
 
+## Package layout
+
+| Import                     | Runs where     | Contents                                                                       |
+| -------------------------- | -------------- | ------------------------------------------------------------------------------ |
+| `fractal-lean-canvas`      | Browser + Node | Schema, pure validate, `markdownCanvas` / `leanHtmlCanvas`, JSON helpers       |
+| `fractal-lean-canvas/node` | Node only      | `validateEcosystem`, `markdownFromPath` / `htmlTableFromPath` / `jsonFromPath` |
+
+Source tree mirrors that split: `src/shared/` (pure), `src/node/` (`fs`), `src/cli/` (bin only).
+
+**Breaking (0.11):** root no longer exports filesystem APIs. Import them from `fractal-lean-canvas/node`.
+
 ## Concepts
 
 1. **One recursive shape** — Every node is a `FractalLeanCanvas` with the nine Lean Canvas dimensions. On disk, child links are `{ "id": "canvas-id" }` on line-item `node` (one file per canvas; file tree is layout-only). Nested canvases under `node` are also schema-valid (e.g. `fractal-lean-canvas json -r`).
@@ -39,18 +50,30 @@ Nest edges use canvas `id`, not paths. Filename ≈ `id` is a handy default, not
 
 ## Quick start (library)
 
+Browser-safe (root):
+
 ```ts
 import {
   FractalLeanCanvas,
   validateDocument,
-  validateEcosystem,
-  markdownFromPath,
-  htmlTableFromPath,
+  markdownCanvas,
   SCHEMA_VERSION,
 } from "fractal-lean-canvas";
 
 const issues = validateDocument(json, "path/to/root.flc.json");
 if (issues.length) throw new Error(issues.map((i) => i.message).join("\n"));
+
+const md = markdownCanvas(canvas);
+```
+
+Node filesystem APIs:
+
+```ts
+import {
+  validateEcosystem,
+  markdownFromPath,
+  htmlTableFromPath,
+} from "fractal-lean-canvas/node";
 
 const result = await validateEcosystem("./recommended"); // expects ./recommended/root.flc.json
 if (!result.ok) process.exit(1);

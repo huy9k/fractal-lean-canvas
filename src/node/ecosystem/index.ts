@@ -1,19 +1,27 @@
 import { readdir, readFile, stat } from "node:fs/promises";
-import { basename, dirname, join, normalize, relative, resolve } from "node:path";
+import {
+  basename,
+  dirname,
+  join,
+  normalize,
+  relative,
+  resolve,
+} from "node:path";
 import {
   ROOT_FILE_NAME,
   isEnvelope,
   unwrapCanvas,
   validateCanvasStructural,
   validateStructural,
-  type StructuralIssue,
-} from "./structural.js";
-import { validateSemantic, type SemanticIssue } from "./semantic.js";
-import type { FractalLeanCanvas } from "../schema/canvas.js";
+} from "../../shared/validate/structural.js";
+import {
+  validateSemantic,
+  type SemanticIssue,
+} from "../../shared/validate/semantic.js";
+import type { ValidationIssue } from "../../shared/validate/document.js";
+import type { FractalLeanCanvas } from "../../shared/schema/canvas.js";
 
-export type ValidationIssue = (StructuralIssue | SemanticIssue) & {
-  file: string;
-};
+export type { ValidationIssue };
 
 export type EcosystemResult = {
   ok: boolean;
@@ -101,28 +109,6 @@ async function locateRoot(
     };
   }
   return { ok: true, rootFile, searchRoot: absolute };
-}
-
-/**
- * Validate a single root envelope document (canvas id nests are not followed).
- */
-export function validateDocument(
-  value: unknown,
-  fileLabel: string,
-): ValidationIssue[] {
-  const structural = validateStructural(value).map((issue) => ({
-    ...issue,
-    file: fileLabel,
-  }));
-  if (structural.length > 0) return structural;
-
-  const canvas = unwrapCanvas(value);
-  return validateSemantic(canvas, undefined, { file: fileLabel }).map(
-    (issue) => ({
-      ...issue,
-      file: fileLabel,
-    }),
-  );
 }
 
 /**

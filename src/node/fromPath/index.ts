@@ -7,19 +7,19 @@ import {
   resolve,
 } from "node:path";
 import { readdir, readFile, stat } from "node:fs/promises";
-import type { FractalLeanCanvas } from "../schema/canvas.js";
-import { DEFAULT_SCHEMA_URI } from "../schema/envelope.js";
+import type { FractalLeanCanvas } from "../../shared/schema/canvas.js";
+import { DEFAULT_SCHEMA_URI } from "../../shared/schema/envelope.js";
 import {
   ROOT_FILE_NAME,
   isEnvelope,
   unwrapCanvas,
   validateCanvasStructural,
   validateStructural,
-} from "../validate/structural.js";
-import { collectCanvasSlots } from "../validate/semantic.js";
-import { markdownCanvas, markdownEcosystem } from "./render.js";
-import { leanHtmlCanvas, leanHtmlEcosystem } from "./leanHtml.js";
-import { jsonCanvas } from "../json/inline.js";
+} from "../../shared/validate/structural.js";
+import { collectCanvasSlots } from "../../shared/validate/semantic.js";
+import { markdownCanvas, markdownEcosystem } from "../../shared/markdown/render.js";
+import { leanHtmlCanvas, leanHtmlEcosystem } from "../../shared/markdown/leanHtml.js";
+import { jsonCanvas } from "../../shared/json/inline.js";
 
 export type RenderFormat = "markdown" | "html-table" | "json";
 

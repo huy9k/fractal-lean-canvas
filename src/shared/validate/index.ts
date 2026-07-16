@@ -14,9 +14,4 @@ export {
   type SemanticWalkOptions,
   type NestedCanvasSlot,
 } from "./semantic.js";
-export {
-  validateEcosystem,
-  validateDocument,
-  type ValidationIssue,
-  type EcosystemResult,
-} from "./ecosystem.js";
+export { validateDocument, type ValidationIssue } from "./document.js";

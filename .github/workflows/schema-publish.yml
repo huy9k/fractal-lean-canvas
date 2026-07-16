@@ -5,8 +5,8 @@ on:
     branches:
       - main
     paths:
-      - "src/schema/**"
-      - "src/cli.ts"
+      - "src/shared/schema/**"
+      - "src/cli/**"
       - "package.json"
 
 permissions:
@@ -35,18 +35,18 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          
+
           # Update root.flc.json schema references
           node --input-type=module -e "
             import fs from 'node:fs';
-            import { SCHEMA_VERSION, DEFAULT_SCHEMA_URI } from './dist/schema/envelope.js';
+            import { SCHEMA_VERSION, DEFAULT_SCHEMA_URI } from './dist/shared/schema/envelope.js';
             const file = './fixtures/recommended/root.flc.json';
             const doc = JSON.parse(fs.readFileSync(file, 'utf8'));
             doc.\$schema = DEFAULT_SCHEMA_URI;
             doc.schemaVersion = SCHEMA_VERSION;
             fs.writeFileSync(file, JSON.stringify(doc, null, 2) + '\n');
           "
-          
+
           git add fixtures/recommended/root.flc.json
           if ! git diff --cached --quiet; then
             git commit -m "chore: update recommended fixture schema reference"
@@ -55,9 +55,9 @@ jobs:
 
       - name: Generate Schema
         run: |
-          SCHEMA_VERSION=$(node --input-type=module -e "import { SCHEMA_VERSION } from './dist/schema/envelope.js'; console.log(SCHEMA_VERSION)")
+          SCHEMA_VERSION=$(node --input-type=module -e "import { SCHEMA_VERSION } from './dist/shared/schema/envelope.js'; console.log(SCHEMA_VERSION)")
           echo "SCHEMA_VERSION=$SCHEMA_VERSION" >> $GITHUB_ENV
-          node dist/cli.js schema > "/tmp/envelope-${SCHEMA_VERSION}.json"
+          node dist/cli/index.js schema > "/tmp/envelope-${SCHEMA_VERSION}.json"
 
       - name: Deploy to raw-schema-json branch
         run: |

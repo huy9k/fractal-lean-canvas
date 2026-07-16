@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 import { createRequire } from "node:module";
-import { VersionedFractalEnvelope } from "./schema/envelope.js";
+import { VersionedFractalEnvelope } from "../shared/schema/envelope.js";
 import {
   htmlTableFromPath,
   jsonFromPath,
   markdownFromPath,
-} from "./markdown/fromPath.js";
-import { validateEcosystem } from "./validate/ecosystem.js";
+} from "../node/fromPath/index.js";
+import { validateEcosystem } from "../node/ecosystem/index.js";
 
-const { version } = createRequire(import.meta.url)("../package.json") as {
+const { version } = createRequire(import.meta.url)("../../package.json") as {
   version: string;
 };
 
@@ -59,7 +59,9 @@ async function main(): Promise<void> {
   const [command, target] = positional;
 
   if (command === "schema") {
-    process.stdout.write(JSON.stringify(VersionedFractalEnvelope, null, 2) + "\n");
+    process.stdout.write(
+      JSON.stringify(VersionedFractalEnvelope, null, 2) + "\n",
+    );
     return;
   }
 
