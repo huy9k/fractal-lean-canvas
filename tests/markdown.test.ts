@@ -32,14 +32,17 @@ describe("FLC markdown / html-table", () => {
       },
       solution: { features: [] },
       customerSegments: { targetUsers: [], earlyAdopters: [] },
-      valueProposition: { id: "uvp", title: "Value" },
+      valueProposition: {
+        statements: [{ id: "uvp", title: "Value" }],
+        highLevelConcepts: [],
+      },
       channels: { paths: [] },
       costStructure: {
         expenses: [{ id: "exp-cloud", title: "Cloud", value: 1000 }],
       },
       revenueStreams: { returns: [] },
       keyMetrics: { kpis: [] },
-      unfairAdvantage: { id: "moat", title: "Moat" },
+      unfairAdvantage: { advantages: [{ id: "moat", title: "Moat" }] },
     };
     const md = markdownCanvas(canvas);
     assert.match(md, /^# Demo/m);

@@ -102,6 +102,14 @@ Exit `0` on success, non-zero with path + message diagnostics on failure. `markd
 
 Node ids must match another bare canvas’s `id`, must be unique across the ecosystem, and must not target the root canvas. Humans/agents should read `title` (and `value`); treat line-item `id` as machine-only. See [`fixtures/recommended`](fixtures/recommended) (classic Uber Lean Canvas + child nodes).
 
+**Value proposition & unfair advantage** — both use `CanvasLineItem[]` wrappers like other dimensions:
+
+- `valueProposition.statements` — the UVP pitch (prefer one primary statement)
+- `valueProposition.highLevelConcepts` — X-for-Y analogies; link child canvases via `node` (may be empty)
+- `unfairAdvantage.advantages` — moat bullets (prefer one headline advantage; add more when the moat has distinct parts)
+
+Single-item UVP/moat is a writing convention, not a schema constraint.
+
 ## What validation covers
 
 | Layer      | Checks                                                                                                       |

@@ -80,8 +80,19 @@ function leanCanvasTable(
 
   const solutions = bullets(canvas.solution.features.map((f) => lineHtml(f)));
   const metrics = bullets(canvas.keyMetrics.kpis.map((k) => lineHtml(k)));
-  const uvp = lineHtml(canvas.valueProposition);
-  const unfair = lineHtml(canvas.unfairAdvantage);
+  const uvpStatements = bullets(
+    canvas.valueProposition.statements.map((s) => lineHtml(s)),
+  );
+  const highLevelConcepts =
+    canvas.valueProposition.highLevelConcepts.length === 0
+      ? ""
+      : `<br/><strong>High-level concept</strong>${bullets(
+          canvas.valueProposition.highLevelConcepts.map((c) => lineHtml(c)),
+        )}`;
+  const uvp = `${uvpStatements}${highLevelConcepts}`;
+  const unfair = bullets(
+    canvas.unfairAdvantage.advantages.map((a) => lineHtml(a)),
+  );
   const channels = bullets(canvas.channels.paths.map((p) => lineHtml(p)));
   const segments = bullets(
     canvas.customerSegments.targetUsers.map((u) => lineHtml(u)),

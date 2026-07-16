@@ -51,7 +51,11 @@ describe("FLC json", () => {
             node?: { id: string; title?: string };
           }>;
         };
-        valueProposition: { node?: { id: string; title?: string } };
+        valueProposition: {
+          highLevelConcepts: Array<{
+            node?: { id: string; title?: string };
+          }>;
+        };
       };
     };
     assert.equal(parsed.schemaVersion, SCHEMA_VERSION);
@@ -61,7 +65,7 @@ describe("FLC json", () => {
     assert.equal(feature?.node?.id, "exec-on-demand-dispatch");
     assert.equal(feature?.node?.title, "On-demand dispatch execution");
     assert.equal(
-      parsed.data.valueProposition.node?.title,
+      parsed.data.valueProposition.highLevelConcepts[0]?.node?.title,
       "High-level concept: personal driver in your pocket",
     );
   });
@@ -85,12 +89,15 @@ describe("FLC json", () => {
         features: [{ id: "f", title: "to b", node: { id: "b" } }],
       },
       customerSegments: { targetUsers: [], earlyAdopters: [] },
-      valueProposition: { id: "uvp-a", title: "a" },
+      valueProposition: {
+        statements: [{ id: "uvp-a", title: "a" }],
+        highLevelConcepts: [],
+      },
       channels: { paths: [] },
       costStructure: { expenses: [] },
       revenueStreams: { returns: [] },
       keyMetrics: { kpis: [] },
-      unfairAdvantage: { id: "moat-a", title: "a" },
+      unfairAdvantage: { advantages: [{ id: "moat-a", title: "a" }] },
     };
     const b: FractalLeanCanvas = {
       ...a,
@@ -99,8 +106,11 @@ describe("FLC json", () => {
       solution: {
         features: [{ id: "f2", title: "to a", node: { id: "a" } }],
       },
-      valueProposition: { id: "uvp-b", title: "b" },
-      unfairAdvantage: { id: "moat-b", title: "b" },
+      valueProposition: {
+        statements: [{ id: "uvp-b", title: "b" }],
+        highLevelConcepts: [],
+      },
+      unfairAdvantage: { advantages: [{ id: "moat-b", title: "b" }] },
     };
     const byId = new Map([
       ["a", a],
@@ -127,12 +137,15 @@ describe("FLC json", () => {
       problem: { topProblems: [], existingAlternatives: [] },
       solution: { features: [] },
       customerSegments: { targetUsers: [], earlyAdopters: [] },
-      valueProposition: { id: "uvp", title: "v" },
+      valueProposition: {
+        statements: [{ id: "uvp", title: "v" }],
+        highLevelConcepts: [],
+      },
       channels: { paths: [] },
       costStructure: { expenses: [] },
       revenueStreams: { returns: [] },
       keyMetrics: { kpis: [] },
-      unfairAdvantage: { id: "moat", title: "m" },
+      unfairAdvantage: { advantages: [{ id: "moat", title: "m" }] },
     };
     const out = jsonCanvas(canvas);
     assert.match(out, new RegExp(`"schemaVersion": "${SCHEMA_VERSION}"`));

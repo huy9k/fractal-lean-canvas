@@ -35,8 +35,25 @@
     ]
   },
   "valueProposition": {
-    "id": "uvp-push-button",
-    "title": "On-demand private rides at the push of a button"
+    "statements": [
+      {
+        "id": "uvp-push-button",
+        "title": "On-demand private rides at the push of a button",
+        "detail": "The elevator pitch: what strangers repeat after one demo ride"
+      }
+    ],
+    "highLevelConcepts": [
+      {
+        "id": "hlc-uberblack-iphone",
+        "title": "UberBlack = on-demand car service via iPhone",
+        "detail": "Classic Ash Maurya X-for-Y — ties luxury car feel to consumer smartphone habit"
+      },
+      {
+        "id": "hlc-limo-pocket",
+        "title": "Limo service in your pocket",
+        "detail": "Shorthand for press and investor decks when ‘UberBlack’ is too product-specific"
+      }
+    ]
   },
   "channels": {
     "paths": [
@@ -68,7 +85,17 @@
     "kpis": [{ "id": "kpi-recall", "title": "Pitch recall rate", "value": 0.8 }]
   },
   "unfairAdvantage": {
-    "id": "moat-category",
-    "title": "Category-defining one-liner before the market is crowded"
+    "advantages": [
+      {
+        "id": "moat-category",
+        "title": "Category-defining one-liner",
+        "detail": "Owns the ‘personal driver in your pocket’ frame before ride-hailing is a crowded category"
+      },
+      {
+        "id": "moat-demo-recall",
+        "title": "Demo-ride recall",
+        "detail": "Free influencer rides convert into repeatable WOM because the pitch is one sentence"
+      }
+    ]
   }
 }

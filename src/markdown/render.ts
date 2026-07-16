@@ -107,8 +107,23 @@ export function markdownCanvas(
 
   lines.push(heading(h + 1, "Value proposition"));
   lines.push("");
-  lines.push(lineText(canvas.valueProposition));
-  lines.push("");
+  if (canvas.valueProposition.statements.length === 0) {
+    lines.push("_No statements._");
+    lines.push("");
+  } else {
+    for (const s of canvas.valueProposition.statements) {
+      lines.push(`- ${lineText(s)}`);
+    }
+    lines.push("");
+  }
+  if (canvas.valueProposition.highLevelConcepts.length > 0) {
+    lines.push(heading(h + 2, "High-level concepts"));
+    lines.push("");
+    for (const c of canvas.valueProposition.highLevelConcepts) {
+      lines.push(`- ${lineText(c)}`);
+    }
+    lines.push("");
+  }
 
   lines.push(heading(h + 1, "Channels"));
   lines.push("");
@@ -170,7 +185,13 @@ export function markdownCanvas(
 
   lines.push(heading(h + 1, "Unfair advantage"));
   lines.push("");
-  lines.push(lineText(canvas.unfairAdvantage));
+  if (canvas.unfairAdvantage.advantages.length === 0) {
+    lines.push("_No advantages._");
+  } else {
+    for (const a of canvas.unfairAdvantage.advantages) {
+      lines.push(`- ${lineText(a)}`);
+    }
+  }
   lines.push("");
 
   return lines.join("\n").trimEnd() + "\n";

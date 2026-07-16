@@ -30,12 +30,15 @@ function blankCanvas(
     problem: { topProblems: [], existingAlternatives: [] },
     solution: { features: [] },
     customerSegments: { targetUsers: [], earlyAdopters: [] },
-    valueProposition: { id: "uvp", title: "x" },
+    valueProposition: {
+      statements: [{ id: "uvp", title: "x" }],
+      highLevelConcepts: [],
+    },
     channels: { paths: [] },
     costStructure: { expenses: [] },
     revenueStreams: { returns: [] },
     keyMetrics: { kpis: [] },
-    unfairAdvantage: { id: "moat", title: "x" },
+    unfairAdvantage: { advantages: [{ id: "moat", title: "x" }] },
     ...overrides,
   };
 }

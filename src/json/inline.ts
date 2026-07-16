@@ -48,7 +48,10 @@ export function inlineCanvasNodes(
       targetUsers: canvas.customerSegments.targetUsers.map(mapItem),
       earlyAdopters: canvas.customerSegments.earlyAdopters.map(mapItem),
     },
-    valueProposition: mapItem(canvas.valueProposition),
+    valueProposition: {
+      statements: canvas.valueProposition.statements.map(mapItem),
+      highLevelConcepts: canvas.valueProposition.highLevelConcepts.map(mapItem),
+    },
     channels: {
       paths: canvas.channels.paths.map(mapItem),
     },
@@ -61,7 +64,9 @@ export function inlineCanvasNodes(
     keyMetrics: {
       kpis: canvas.keyMetrics.kpis.map(mapItem),
     },
-    unfairAdvantage: mapItem(canvas.unfairAdvantage),
+    unfairAdvantage: {
+      advantages: canvas.unfairAdvantage.advantages.map(mapItem),
+    },
   };
 }
 

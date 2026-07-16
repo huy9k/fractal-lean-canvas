@@ -51,8 +51,20 @@
     ]
   },
   "valueProposition": {
-    "id": "uvp-fast-eta",
-    "title": "Request to car-en-route in under a few minutes in covered zones"
+    "statements": [
+      {
+        "id": "uvp-fast-eta",
+        "title": "Request to car-en-route in under a few minutes in covered zones",
+        "detail": "Operational promise the dispatch stack must keep — not a marketing tagline"
+      }
+    ],
+    "highLevelConcepts": [
+      {
+        "id": "hlc-air-traffic-streets",
+        "title": "Air-traffic control for street rides",
+        "detail": "X-for-Y for ops/engineering: match supply to demand in real time across a geo-fenced city"
+      }
+    ]
   },
   "channels": {
     "paths": [
@@ -91,7 +103,17 @@
     ]
   },
   "unfairAdvantage": {
-    "id": "moat-density",
-    "title": "City-by-city density know-how and dispatch heuristics competitors must re-learn per market"
+    "advantages": [
+      {
+        "id": "moat-density",
+        "title": "City-by-city density know-how",
+        "detail": "Which neighborhoods to seed first, when to subsidize drivers, and how to read cancel spikes"
+      },
+      {
+        "id": "moat-dispatch-heuristics",
+        "title": "Dispatch heuristics competitors re-learn per market",
+        "detail": "ETA models, match radius, and surge triggers tuned from live trip data — not copy-pasteable from another city"
+      }
+    ]
   }
 }

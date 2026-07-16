@@ -1,6 +1,6 @@
 {
-  "$schema": "https://raw.githubusercontent.com/huy9k/fractal-lean-canvas/raw-schema-json/envelope-0.9.4.json",
-  "schemaVersion": "0.9.4",
+  "$schema": "https://raw.githubusercontent.com/huy9k/fractal-lean-canvas/raw-schema-json/envelope-0.10.0.json",
+  "schemaVersion": "0.10.0",
   "data": {
     "id": "uber-lean-canvas",
     "title": "Uber (early Lean Canvas)",
@@ -89,11 +89,23 @@
       ]
     },
     "valueProposition": {
-      "id": "uvp-smartest-way",
-      "title": "The smartest way to get around — tap a button, get a safe reliable ride in minutes",
-      "node": {
-        "id": "concept-personal-driver"
-      }
+      "statements": [
+        {
+          "id": "uvp-smartest-way",
+          "title": "The smartest way to get around — tap a button, get a safe reliable ride in minutes",
+          "detail": "Single clear promise for riders: reliability and speed beat hailing uncertainty"
+        }
+      ],
+      "highLevelConcepts": [
+        {
+          "id": "hlc-personal-driver",
+          "title": "Personal driver in your pocket",
+          "detail": "X-for-Y: Uber = on-demand private car service via smartphone",
+          "node": {
+            "id": "concept-personal-driver"
+          }
+        }
+      ]
     },
     "channels": {
       "paths": [
@@ -178,8 +190,23 @@
       ]
     },
     "unfairAdvantage": {
-      "id": "moat-network",
-      "title": "Two-sided network effects plus brand trust in ‘push-button reliable rides’ — hard to copy once density exists"
+      "advantages": [
+        {
+          "id": "moat-network",
+          "title": "Two-sided network effects",
+          "detail": "More riders attract more drivers (and vice versa) — hard to bootstrap once a city tips"
+        },
+        {
+          "id": "moat-brand",
+          "title": "Brand trust in ‘push-button reliable rides’",
+          "detail": "Early SF wins compound into default mental model before clones arrive"
+        },
+        {
+          "id": "moat-density-playbook",
+          "title": "City launch density playbook",
+          "detail": "Neighborhood-by-neighborhood supply seeding is operational know-how, not just software"
+        }
+      ]
     }
   }
 }

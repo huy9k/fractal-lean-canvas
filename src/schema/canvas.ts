@@ -40,6 +40,8 @@ export type CanvasLineItem = {
   node?: CanvasSlot;
 };
 
+type LineItemList = CanvasLineItem[];
+
 /**
  * Fractal Lean Canvas (9 Lean Canvas dimensions).
  * Document versioning lives on VersionedFractalEnvelope, not on child nodes.
@@ -50,79 +52,73 @@ export type FractalLeanCanvas = {
   title: string;
   ownerId: string;
   problem: {
-    topProblems: CanvasLineItem[];
-    existingAlternatives: CanvasLineItem[];
+    topProblems: LineItemList;
+    existingAlternatives: LineItemList;
   };
-  solution: { features: CanvasLineItem[] };
+  solution: { features: LineItemList };
   customerSegments: {
-    targetUsers: CanvasLineItem[];
-    earlyAdopters: CanvasLineItem[];
+    targetUsers: LineItemList;
+    earlyAdopters: LineItemList;
   };
-  valueProposition: CanvasLineItem;
-  channels: { paths: CanvasLineItem[] };
-  costStructure: { expenses: CanvasLineItem[] };
-  revenueStreams: { returns: CanvasLineItem[] };
-  keyMetrics: { kpis: CanvasLineItem[] };
-  unfairAdvantage: CanvasLineItem;
+  valueProposition: {
+    statements: LineItemList;
+    highLevelConcepts: LineItemList;
+  };
+  channels: { paths: LineItemList };
+  costStructure: { expenses: LineItemList };
+  revenueStreams: { returns: LineItemList };
+  keyMetrics: { kpis: LineItemList };
+  unfairAdvantage: { advantages: LineItemList };
 };
 
 /** Child canvas: id pointer or nested canvas (inlined projections). */
 export type CanvasSlot = CanvasIdRef | FractalLeanCanvas;
+
+/** TypeBox object with only named line-item arrays. */
+function itemSection(shape: Record<string, TSchema>) {
+  return Type.Object(shape, { additionalProperties: false });
+}
+
+/** Build the cyclic FractalLeanCanvas object schema. */
+function buildFractalLeanCanvasSchema(canvasRef: TSchema) {
+  const items = Type.Array(canvasLineItem(canvasRef));
+
+  return Type.Object(
+    {
+      id: Type.String({ minLength: 1 }),
+      title: Type.String({ minLength: 1 }),
+      ownerId: Type.String({ minLength: 1 }),
+
+      problem: itemSection({
+        topProblems: items,
+        existingAlternatives: items,
+      }),
+      solution: itemSection({ features: items }),
+      customerSegments: itemSection({
+        targetUsers: items,
+        earlyAdopters: items,
+      }),
+      valueProposition: itemSection({
+        statements: items,
+        highLevelConcepts: items,
+      }),
+      channels: itemSection({ paths: items }),
+      costStructure: itemSection({ expenses: items }),
+      revenueStreams: itemSection({ returns: items }),
+      keyMetrics: itemSection({ kpis: items }),
+      unfairAdvantage: itemSection({ advantages: items }),
+    },
+    { additionalProperties: false },
+  );
+}
 
 /**
  * Runtime TypeBox schema for FractalLeanCanvas (cyclic: `node` may nest).
  */
 export const FractalLeanCanvas = Type.Cyclic(
   {
-    FractalLeanCanvas: Type.Object(
-      {
-        id: Type.String({ minLength: 1 }),
-        title: Type.String({ minLength: 1 }),
-        ownerId: Type.String({ minLength: 1 }),
-
-        problem: Type.Object({
-          topProblems: Type.Array(
-            canvasLineItem(Type.Ref("FractalLeanCanvas")),
-          ),
-          existingAlternatives: Type.Array(
-            canvasLineItem(Type.Ref("FractalLeanCanvas")),
-          ),
-        }),
-
-        solution: Type.Object({
-          features: Type.Array(canvasLineItem(Type.Ref("FractalLeanCanvas"))),
-        }),
-
-        customerSegments: Type.Object({
-          targetUsers: Type.Array(
-            canvasLineItem(Type.Ref("FractalLeanCanvas")),
-          ),
-          earlyAdopters: Type.Array(
-            canvasLineItem(Type.Ref("FractalLeanCanvas")),
-          ),
-        }),
-
-        valueProposition: canvasLineItem(Type.Ref("FractalLeanCanvas")),
-
-        channels: Type.Object({
-          paths: Type.Array(canvasLineItem(Type.Ref("FractalLeanCanvas"))),
-        }),
-
-        costStructure: Type.Object({
-          expenses: Type.Array(canvasLineItem(Type.Ref("FractalLeanCanvas"))),
-        }),
-
-        revenueStreams: Type.Object({
-          returns: Type.Array(canvasLineItem(Type.Ref("FractalLeanCanvas"))),
-        }),
-
-        keyMetrics: Type.Object({
-          kpis: Type.Array(canvasLineItem(Type.Ref("FractalLeanCanvas"))),
-        }),
-
-        unfairAdvantage: canvasLineItem(Type.Ref("FractalLeanCanvas")),
-      },
-      { additionalProperties: false },
+    FractalLeanCanvas: buildFractalLeanCanvasSchema(
+      Type.Ref("FractalLeanCanvas"),
     ),
   },
   "FractalLeanCanvas",
@@ -136,44 +132,57 @@ export function isEmbeddedCanvas(slot: CanvasSlot): slot is FractalLeanCanvas {
   return "ownerId" in slot;
 }
 
+/** Path prefix + accessor for every CanvasLineItem[] on a canvas. */
+const LINE_ITEM_SECTIONS: ReadonlyArray<{
+  path: string;
+  items: (canvas: FractalLeanCanvas) => LineItemList;
+}> = [
+  {
+    path: "problem/topProblems",
+    items: (c) => c.problem.topProblems,
+  },
+  {
+    path: "problem/existingAlternatives",
+    items: (c) => c.problem.existingAlternatives,
+  },
+  { path: "solution/features", items: (c) => c.solution.features },
+  {
+    path: "customerSegments/targetUsers",
+    items: (c) => c.customerSegments.targetUsers,
+  },
+  {
+    path: "customerSegments/earlyAdopters",
+    items: (c) => c.customerSegments.earlyAdopters,
+  },
+  {
+    path: "valueProposition/statements",
+    items: (c) => c.valueProposition.statements,
+  },
+  {
+    path: "valueProposition/highLevelConcepts",
+    items: (c) => c.valueProposition.highLevelConcepts,
+  },
+  { path: "channels/paths", items: (c) => c.channels.paths },
+  {
+    path: "costStructure/expenses",
+    items: (c) => c.costStructure.expenses,
+  },
+  {
+    path: "revenueStreams/returns",
+    items: (c) => c.revenueStreams.returns,
+  },
+  { path: "keyMetrics/kpis", items: (c) => c.keyMetrics.kpis },
+  {
+    path: "unfairAdvantage/advantages",
+    items: (c) => c.unfairAdvantage.advantages,
+  },
+];
+
 /** Every line item on a canvas (for id registration / node walks). */
 export function collectLineItems(
   canvas: FractalLeanCanvas,
 ): { path: string; item: CanvasLineItem }[] {
-  const out: { path: string; item: CanvasLineItem }[] = [];
-  const push = (path: string, item: CanvasLineItem): void => {
-    out.push({ path, item });
-  };
-
-  for (const item of canvas.problem.topProblems) {
-    push(`problem/topProblems/${item.id}`, item);
-  }
-  for (const item of canvas.problem.existingAlternatives) {
-    push(`problem/existingAlternatives/${item.id}`, item);
-  }
-  for (const item of canvas.solution.features) {
-    push(`solution/features/${item.id}`, item);
-  }
-  for (const item of canvas.customerSegments.targetUsers) {
-    push(`customerSegments/targetUsers/${item.id}`, item);
-  }
-  for (const item of canvas.customerSegments.earlyAdopters) {
-    push(`customerSegments/earlyAdopters/${item.id}`, item);
-  }
-  push("valueProposition", canvas.valueProposition);
-  for (const item of canvas.channels.paths) {
-    push(`channels/paths/${item.id}`, item);
-  }
-  for (const item of canvas.costStructure.expenses) {
-    push(`costStructure/expenses/${item.id}`, item);
-  }
-  for (const item of canvas.revenueStreams.returns) {
-    push(`revenueStreams/returns/${item.id}`, item);
-  }
-  for (const item of canvas.keyMetrics.kpis) {
-    push(`keyMetrics/kpis/${item.id}`, item);
-  }
-  push("unfairAdvantage", canvas.unfairAdvantage);
-
-  return out;
+  return LINE_ITEM_SECTIONS.flatMap(({ path, items }) =>
+    items(canvas).map((item) => ({ path: `${path}/${item.id}`, item })),
+  );
 }
