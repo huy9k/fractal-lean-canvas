@@ -7,6 +7,7 @@ import {
   markdownFromPath,
 } from "../node/fromPath/index.js";
 import { validateEcosystem } from "../node/ecosystem/index.js";
+import { runInit } from "./init.js";
 
 const { version } = createRequire(import.meta.url)("../../package.json") as {
   version: string;
@@ -18,6 +19,9 @@ Commands:
   validate <path>              Validate an FLC ecosystem
                                <path> is a directory containing root.flc.json, or root.flc.json itself
                                Recommended: ./recommended with nested bare JSON under ./recommended/nodes/
+  init <path>                  Create a blank bare .flc.json canvas
+  init --root <path>           Create a blank versioned root envelope
+                               Directory path → <dir>/root.flc.json
   markdown <path> [-r]         Render list/heading markdown (stdout)
   html-table <path> [-r]       Render classic Lean Canvas as pure HTML (stdout)
   json <path> [-r]             Print versioned FLC JSON (with -r, inline nodes)
@@ -25,6 +29,7 @@ Commands:
 
 Options:
   -r, --recursive  Follow node ids (markdown/html: extra docs; json: inline tree)
+  --force          Overwrite existing file (init)
   -h, --help       Show help
   -v, --version    Show version
 `;
@@ -41,8 +46,36 @@ function printVersion(): never {
   process.exit(0);
 }
 
+/** Parse init flags: --root <path> or positional path, plus --force. */
+function parseInitArgs(args: string[]): {
+  path: string;
+  root: boolean;
+  force: boolean;
+} {
+  const force = args.includes("--force");
+  const rootIdx = args.indexOf("--root");
+  if (rootIdx !== -1) {
+    const path = args[rootIdx + 1];
+    if (!path || path.startsWith("-")) {
+      console.error("init --root requires a path");
+      process.exit(2);
+    }
+    return { path, root: true, force };
+  }
+
+  const positional = args.filter(
+    (a) => a !== "--force" && a !== "-r" && a !== "--recursive",
+  );
+  const path = positional[0];
+  if (!path || path.startsWith("-")) {
+    console.error("init requires a path");
+    process.exit(2);
+  }
+  return { path, root: false, force };
+}
+
 /**
- * CLI entry: `fractal-lean-canvas validate|markdown|html-table|json <path>`
+ * CLI entry: `fractal-lean-canvas validate|init|markdown|html-table|json <path>`
  */
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
@@ -55,13 +88,29 @@ async function main(): Promise<void> {
   }
 
   const recursive = args.includes("-r") || args.includes("--recursive");
-  const positional = args.filter((a) => a !== "-r" && a !== "--recursive");
-  const [command, target] = positional;
+  const positional = args.filter(
+    (a) =>
+      a !== "-r" && a !== "--recursive" && a !== "--force" && a !== "--root",
+  );
+
+  // Drop the value that follows --root from positional command detection
+  const rootIdx = args.indexOf("--root");
+  const rootValue = rootIdx !== -1 ? args[rootIdx + 1] : undefined;
+  const commandArgs = positional.filter((a) => a !== rootValue);
+  const [command, target] = commandArgs;
 
   if (command === "schema") {
     process.stdout.write(
       JSON.stringify(VersionedFractalEnvelope, null, 2) + "\n",
     );
+    return;
+  }
+
+  if (command === "init") {
+    const initArgs = args.slice(1);
+    const options = parseInitArgs(initArgs);
+    const written = await runInit(options);
+    console.log(`Wrote ${written}`);
     return;
   }
 

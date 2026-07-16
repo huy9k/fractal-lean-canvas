@@ -16,10 +16,10 @@ Requires Node.js 20+.
 
 ## Package layout
 
-| Import                     | Runs where     | Contents                                                                       |
-| -------------------------- | -------------- | ------------------------------------------------------------------------------ |
-| `fractal-lean-canvas`      | Browser + Node | Schema, pure validate, `markdownCanvas` / `leanHtmlCanvas`, JSON helpers       |
-| `fractal-lean-canvas/node` | Node only      | `validateEcosystem`, `markdownFromPath` / `htmlTableFromPath` / `jsonFromPath` |
+| Import                     | Runs where     | Contents                                                                                  |
+| -------------------------- | -------------- | ----------------------------------------------------------------------------------------- |
+| `fractal-lean-canvas`      | Browser + Node | Schema, pure validate, blank templates, `markdownCanvas` / `leanHtmlCanvas`, JSON helpers |
+| `fractal-lean-canvas/node` | Node only      | `validateEcosystem`, `markdownFromPath` / `htmlTableFromPath` / `jsonFromPath`            |
 
 Source tree mirrors that split: `src/shared/` (pure), `src/node/` (`fs`), `src/cli/` (bin only).
 
@@ -57,6 +57,7 @@ import {
   FractalLeanCanvas,
   validateDocument,
   markdownCanvas,
+  blankRootEnvelopeJson,
   SCHEMA_VERSION,
 } from "fractal-lean-canvas";
 
@@ -64,6 +65,7 @@ const issues = validateDocument(json, "path/to/root.flc.json");
 if (issues.length) throw new Error(issues.map((i) => i.message).join("\n"));
 
 const md = markdownCanvas(canvas);
+const newFile = blankRootEnvelopeJson({ title: "Untitled" });
 ```
 
 Node filesystem APIs:
@@ -92,6 +94,8 @@ if (html.ok) console.log(html.output);
 ## CLI
 
 ```bash
+npx fractal-lean-canvas init ./nodes/new-idea          # bare child canvas → new-idea.flc.json
+npx fractal-lean-canvas init --root ./my-ecosystem     # → my-ecosystem/root.flc.json
 npx fractal-lean-canvas validate ./recommended
 npx fractal-lean-canvas markdown ./recommended/root.flc.json          # one canvas (lists + headings)
 npx fractal-lean-canvas markdown ./recommended -r                 # follow node ids
