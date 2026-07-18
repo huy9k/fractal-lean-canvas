@@ -66,7 +66,7 @@ describe("FLC markdown / html-table", () => {
     assert.doesNotMatch(md, /\*\*`p1`\*\*/);
     assert.match(md, /Cloud — \*\*USD 1,000\.00\/mo\*\*/);
     assert.match(md, /→ `child`/);
-    assert.match(md, /Latency — \*\*lte 100 ms\*\*/);
+    assert.match(md, /Latency — \*\*≤ 100 ms\*\*/);
     assert.match(md, /## Problem/);
   });
 

@@ -54,11 +54,23 @@ function moneyLine(
   return `${bits.join(" — ")}${node}`;
 }
 
+/** Comparator code → display symbol */
+function comparatorSymbol(comparator: MetricLineItem["comparator"]): string {
+  switch (comparator) {
+    case "gte":
+      return "≥";
+    case "lte":
+      return "≤";
+    case "eq":
+      return "=";
+  }
+}
+
 /** Human line for a metric. */
 function metricLine(item: MetricLineItem): string {
   const unit = item.unit ? ` ${item.unit}` : "";
   const bits = [
-    `${item.title} — **${item.comparator} ${formatTarget(item.targetValue)}${unit}**`,
+    `${item.title} — **${comparatorSymbol(item.comparator)} ${formatTarget(item.targetValue)}${unit}**`,
   ];
   if (item.detail) bits.push(item.detail);
   return bits.join(" — ");

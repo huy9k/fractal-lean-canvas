@@ -63,12 +63,24 @@ function moneyHtml(
   return `${parts.join(" — ")}${node}`;
 }
 
+/** Comparator code → display symbol */
+function comparatorSymbol(comparator: MetricLineItem["comparator"]): string {
+  switch (comparator) {
+    case "gte":
+      return "≥";
+    case "lte":
+      return "≤";
+    case "eq":
+      return "=";
+  }
+}
+
 /** Metric line HTML. */
 function metricHtml(item: MetricLineItem): string {
   const unit = item.unit ? ` ${item.unit}` : "";
   const parts = [
     escapeHtml(item.title),
-    `<strong>${escapeHtml(item.comparator)} ${formatTarget(item.targetValue)}${escapeHtml(unit)}</strong>`,
+    `<strong>${escapeHtml(comparatorSymbol(item.comparator))} ${formatTarget(item.targetValue)}${escapeHtml(unit)}</strong>`,
   ];
   if (item.detail) parts.push(escapeHtml(item.detail));
   return parts.join(" — ");
