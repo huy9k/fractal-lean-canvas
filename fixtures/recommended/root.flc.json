@@ -131,35 +131,59 @@
           "id": "exp-city-gm",
           "title": "City GM / ops wages",
           "amountMinor": 2500000,
-          "cadence": { "type": "recurring", "every": 1, "unit": "month" }
+          "cadence": {
+            "type": "recurring",
+            "every": 1,
+            "unit": "month"
+          }
         },
         {
           "id": "exp-infra",
           "title": "App, web, SMS, and mapping infrastructure",
           "detail": "Sponsors the on-demand dispatch execution canvas — fractal depth requires a cost excuse",
           "amountMinor": 4000000,
-          "cadence": { "type": "recurring", "every": 1, "unit": "month" },
-          "node": { "id": "exec-on-demand-dispatch" }
+          "cadence": {
+            "type": "recurring",
+            "every": 1,
+            "unit": "month"
+          },
+          "node": {
+            "id": "exec-on-demand-dispatch"
+          }
         },
         {
           "id": "exp-driver-incentives",
           "title": "Driver incentives and launch subsidies",
           "amountMinor": 3000000,
-          "cadence": { "type": "recurring", "every": 1, "unit": "month" }
+          "cadence": {
+            "type": "recurring",
+            "every": 1,
+            "unit": "month"
+          }
         },
         {
           "id": "exp-compliance",
           "title": "Insurance, legal, and local compliance",
           "amountMinor": 1500000,
-          "cadence": { "type": "recurring", "every": 1, "unit": "month" }
+          "cadence": {
+            "type": "recurring",
+            "every": 1,
+            "unit": "month"
+          }
         },
         {
           "id": "exp-concept-marketing",
           "title": "Category-concept demos and pitch seeding",
           "detail": "Pays for the 'personal driver in your pocket' concept canvas — no free narrative depth",
           "amountMinor": 500000,
-          "cadence": { "type": "recurring", "every": 1, "unit": "month" },
-          "node": { "id": "concept-personal-driver" }
+          "cadence": {
+            "type": "recurring",
+            "every": 1,
+            "unit": "month"
+          },
+          "node": {
+            "id": "concept-personal-driver"
+          }
         }
       ]
     },
@@ -169,13 +193,21 @@
           "id": "rev-take-rate",
           "title": "Commission take-rate on every completed trip",
           "amountMinor": 12000000,
-          "cadence": { "type": "recurring", "every": 1, "unit": "month" }
+          "cadence": {
+            "type": "recurring",
+            "every": 1,
+            "unit": "month"
+          }
         },
         {
           "id": "rev-surge",
           "title": "Surge pricing during peak demand",
           "amountMinor": 2000000,
-          "cadence": { "type": "recurring", "every": 1, "unit": "month" }
+          "cadence": {
+            "type": "recurring",
+            "every": 1,
+            "unit": "month"
+          }
         }
       ]
     },
