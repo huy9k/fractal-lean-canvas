@@ -1,5 +1,6 @@
 import type { FractalLeanCanvas } from "../schema/canvas.js";
 import {
+  DEFAULT_CURRENCY,
   versionedEnvelope,
   type VersionedFractalEnvelope,
 } from "../schema/envelope.js";
@@ -11,6 +12,17 @@ export type BlankCanvasOptions = {
   title?: string;
   /** Owner id (default: human). */
   ownerId?: string;
+  /** Inclusive start date (default: 2026-01-01). */
+  startDate?: string;
+  /** Inclusive end date (default: 2026-12-31). */
+  endDate?: string;
+  /** Optional scope detail. */
+  detail?: string;
+};
+
+export type BlankRootOptions = BlankCanvasOptions & {
+  /** ISO 4217 currency (default: USD). */
+  currency?: string;
 };
 
 /** Short random id for new canvases (browser + Node). */
@@ -28,6 +40,9 @@ export function blankCanvas(
     id: options.id ?? newCanvasId(),
     title: options.title?.trim() || "Untitled",
     ownerId: options.ownerId?.trim() || "human",
+    detail: options.detail,
+    startDate: options.startDate ?? "2026-01-01",
+    endDate: options.endDate ?? "2026-12-31",
     problem: { topProblems: [], existingAlternatives: [] },
     solution: { features: [] },
     customerSegments: { targetUsers: [], earlyAdopters: [] },
@@ -44,9 +59,11 @@ export function blankCanvas(
  * Build a versioned root envelope around a blank canvas.
  */
 export function blankRootEnvelope(
-  options: BlankCanvasOptions = {},
+  options: BlankRootOptions = {},
 ): VersionedFractalEnvelope {
-  return versionedEnvelope(blankCanvas(options));
+  return versionedEnvelope(blankCanvas(options), {
+    currency: options.currency ?? DEFAULT_CURRENCY,
+  });
 }
 
 /** Pretty-print a bare blank canvas as JSON (trailing newline). */
@@ -55,8 +72,6 @@ export function blankCanvasJson(options: BlankCanvasOptions = {}): string {
 }
 
 /** Pretty-print a blank root envelope as JSON (trailing newline). */
-export function blankRootEnvelopeJson(
-  options: BlankCanvasOptions = {},
-): string {
+export function blankRootEnvelopeJson(options: BlankRootOptions = {}): string {
   return `${JSON.stringify(blankRootEnvelope(options), null, 2)}\n`;
 }

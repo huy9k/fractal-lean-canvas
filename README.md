@@ -16,21 +16,22 @@ Requires Node.js 20+.
 
 ## Package layout
 
-| Import                     | Runs where     | Contents                                                                                  |
-| -------------------------- | -------------- | ----------------------------------------------------------------------------------------- |
-| `fractal-lean-canvas`      | Browser + Node | Schema, pure validate, blank templates, `markdownCanvas` / `leanHtmlCanvas`, JSON helpers |
-| `fractal-lean-canvas/node` | Node only      | `validateEcosystem`, `markdownFromPath` / `htmlTableFromPath` / `jsonFromPath`            |
+| Import                     | Runs where     | Contents                                                                                              |
+| -------------------------- | -------------- | ----------------------------------------------------------------------------------------------------- |
+| `fractal-lean-canvas`      | Browser + Node | Schema, finance helpers, validate, blank templates, `markdownCanvas` / `leanHtmlCanvas`, JSON helpers |
+| `fractal-lean-canvas/node` | Node only      | `validateEcosystem`, `markdownFromPath` / `htmlTableFromPath` / `jsonFromPath`                        |
 
 Source tree mirrors that split: `src/shared/` (pure), `src/node/` (`fs`), `src/cli/` (bin only).
 
-**Breaking (0.11):** root no longer exports filesystem APIs. Import them from `fractal-lean-canvas/node`.
+**Breaking (0.13):** typed cost/revenue/metric line items; fractal nesting only on cost `node`; envelope `currency`; canvas date windows; cadence-aware net-burn rollups. See below.
 
 ## Concepts
 
-1. **One recursive shape** — Every node is a `FractalLeanCanvas` with the nine Lean Canvas dimensions. On disk, child links are `{ "id": "canvas-id" }` on line-item `node` (one file per canvas; file tree is layout-only). Nested canvases under `node` are also schema-valid (e.g. `fractal-lean-canvas json -r`).
-2. **Single root** — Each ecosystem has one `root.flc.json` versioned envelope. All other JSON files are bare canvases (no `schemaVersion`) ending with `.flc.json`.
-3. **Homogeneous traversal** — Agents walk the same structure at enterprise depth or task depth (`validateEcosystem` resolves canvas ids from the root).
-4. **Git holds truth** — Documents are JSON in Git. Version authority lives only on `root.json`. There is no embedded commit hash.
+1. **One recursive shape** — Every node is a `FractalLeanCanvas` with the nine Lean Canvas dimensions and a required `startDate`/`endDate` window.
+2. **Cost-excuse fractal** — Child canvases attach only via `costStructure.expenses[].node`. No drill-down without a budget that sponsors it.
+3. **Single root** — Each ecosystem has one `root.flc.json` versioned envelope (`schemaVersion` + ISO 4217 `currency`). All other JSON files are bare canvases ending with `.flc.json`.
+4. **Homogeneous traversal** — Agents walk the same structure at enterprise depth or task depth (`validateEcosystem` resolves canvas ids from the root).
+5. **Git holds truth** — Documents are JSON in Git. Version authority and settlement currency live only on the root envelope.
 
 ## Recommended layout
 
@@ -64,7 +65,7 @@ import {
 const issues = validateDocument(json, "path/to/root.flc.json");
 if (issues.length) throw new Error(issues.map((i) => i.message).join("\n"));
 
-const md = markdownCanvas(canvas);
+const md = markdownCanvas(canvas, { currency: "USD" });
 const newFile = blankRootEnvelopeJson({ title: "Untitled" });
 ```
 
@@ -98,7 +99,7 @@ npx fractal-lean-canvas init ./nodes/new-idea          # bare child canvas → n
 npx fractal-lean-canvas init --root ./my-ecosystem     # → my-ecosystem/root.flc.json
 npx fractal-lean-canvas validate ./recommended
 npx fractal-lean-canvas markdown ./recommended/root.flc.json          # one canvas (lists + headings)
-npx fractal-lean-canvas markdown ./recommended -r                 # follow node ids
+npx fractal-lean-canvas markdown ./recommended -r                 # follow cost node ids
 npx fractal-lean-canvas html-table ./recommended/root.flc.json        # classic Lean Canvas HTML
 npx fractal-lean-canvas html-table ./recommended -r
 npx fractal-lean-canvas json ./recommended/root.flc.json              # one canvas as versioned envelope
@@ -115,37 +116,43 @@ Exit `0` on success, non-zero with path + message diagnostics on failure. `markd
 
 ```json
 {
-  "$schema": "https://example.com/flc/0.1.0.json",
-  "schemaVersion": "0.1.0",
+  "$schema": "https://example.com/flc/0.13.0.json",
+  "schemaVersion": "0.13.0",
+  "currency": "USD",
   "data": { "...": "FractalLeanCanvas" }
 }
 ```
 
-**Child files** — bare `FractalLeanCanvas` objects (no envelope). Line items share one shape (`id`, `title`, optional `value` / `detail` / `node`). Node slots point at canvases by id:
+**Child files** — bare `FractalLeanCanvas` objects (no envelope). Line-item kinds:
 
-```json
-"node": { "id": "exec-on-demand-dispatch" }
-```
+| Section                                                                           | Item type         | Money / metrics                                | Fractal `node`      |
+| --------------------------------------------------------------------------------- | ----------------- | ---------------------------------------------- | ------------------- |
+| Qualitative blocks (problem, solution, segments, UVP, channels, unfair advantage) | `CanvasLineItem`  | —                                              | —                   |
+| `costStructure.expenses`                                                          | `CostLineItem`    | `amountMinor` + `cadence` + optional dates     | optional `{ "id" }` |
+| `revenueStreams.returns`                                                          | `RevenueLineItem` | same as cost                                   | —                   |
+| `keyMetrics.kpis`                                                                 | `MetricLineItem`  | `targetValue` + `comparator` + optional `unit` | —                   |
 
-Node ids must match another bare canvas’s `id`, must be unique across the ecosystem, and must not target the root canvas. Humans/agents should read `title` (and `value`); treat line-item `id` as machine-only. See [`fixtures/recommended`](fixtures/recommended) (classic Uber Lean Canvas + child nodes).
+`amountMinor` is the integer minor unit of envelope `currency` **per cadence tick** (e.g. cents for USD). Cadence is `one_time` or `recurring { every, unit }`. Item dates inherit the canvas window when omitted.
 
-**Value proposition & unfair advantage** — both use `CanvasLineItem[]` wrappers like other dimensions:
+Cost `node` ids must match another bare canvas’s `id`, must be unique across the ecosystem, must not target the root, and each child may have **at most one** sponsoring expense (tree, not DAG). See [`fixtures/recommended`](fixtures/recommended) (early Uber Lean Canvas + cost-sponsored children).
+
+**Value proposition & unfair advantage** — qualitative only:
 
 - `valueProposition.statements` — the UVP pitch (prefer one primary statement)
-- `valueProposition.highLevelConcepts` — X-for-Y analogies; link child canvases via `node` (may be empty)
-- `unfairAdvantage.advantages` — moat bullets (prefer one headline advantage; add more when the moat has distinct parts)
-
-Single-item UVP/moat is a writing convention, not a schema constraint.
+- `valueProposition.highLevelConcepts` — X-for-Y analogies (may be empty; drill-down lives under a cost line)
+- `unfairAdvantage.advantages` — moat bullets
 
 ## What validation covers
 
-| Layer      | Checks                                                                                                       |
-| ---------- | ------------------------------------------------------------------------------------------------------------ |
-| Structural | Root = envelope; other `.flc.json` = bare canvas                                                             |
-| Semantic   | Unique `id`s, max depth (`16`), cycle guard, cost rollups (child expenses ≤ parent / mitigation ≤ line item) |
-| Ecosystem  | Requires `root.flc.json`; resolves `{ id }` node links; bans unreachable files; ecosystem-wide id uniqueness |
+| Layer      | Checks                                                                                                                         |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Structural | Root = envelope (`currency` ISO 4217); other `.flc.json` = bare canvas; typed line items                                       |
+| Semantic   | Unique `id`s, max depth (`16`), cycle guard, date bounds, single-parent cost tree, cadence-aware net-burn ≤ sponsoring expense |
+| Ecosystem  | Requires `root.flc.json`; resolves cost `{ id }` links; bans unreachable files; ecosystem-wide id uniqueness                   |
 
-`validateDocument` validates a root envelope. Nested canvases under `node` are walked; `{ id }` refs need `validateEcosystem` / `fractal-lean-canvas validate`.
+Net burn = child costs − child revenues over the overlapping window (revenue assumed paid in time; no proration).
+
+`validateDocument` validates a root envelope. Nested canvases under cost `node` are walked; `{ id }` refs need `validateEcosystem` / `fractal-lean-canvas validate`.
 
 Business-specific policy belongs in your state repo (or a future plugin), not here.
 

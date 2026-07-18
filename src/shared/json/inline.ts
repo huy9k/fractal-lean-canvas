@@ -1,13 +1,16 @@
 import type {
   CanvasLineItem,
-  CanvasSlot,
+  CostLineItem,
   FractalLeanCanvas,
+  MetricLineItem,
+  RevenueLineItem,
+  CanvasSlot,
 } from "../schema/canvas.js";
 import { DEFAULT_SCHEMA_URI, versionedEnvelope } from "../schema/envelope.js";
 import type { VersionedFractalEnvelope } from "../schema/envelope.js";
 
 /**
- * Deep-clone a canvas with every `node: { id }` replaced by the full child canvas.
+ * Deep-clone a canvas with every cost `node: { id }` replaced by the full child.
  * Cycles stay as `{ id }` stubs so expansion terminates.
  */
 export function inlineCanvasNodes(
@@ -22,7 +25,9 @@ export function inlineCanvasNodes(
   const nextAncestors = new Set(ancestors);
   nextAncestors.add(canvas.id);
 
-  const mapItem = (item: CanvasLineItem): CanvasLineItem => {
+  const mapQual = (item: CanvasLineItem): CanvasLineItem => ({ ...item });
+
+  const mapCost = (item: CostLineItem): CostLineItem => {
     const { node, ...rest } = item;
     if (!node) return { ...rest };
     const child = byId.get(node.id);
@@ -33,39 +38,45 @@ export function inlineCanvasNodes(
     };
   };
 
+  const mapRevenue = (item: RevenueLineItem): RevenueLineItem => ({ ...item });
+  const mapMetric = (item: MetricLineItem): MetricLineItem => ({ ...item });
+
   return {
     id: canvas.id,
     title: canvas.title,
     ownerId: canvas.ownerId,
+    detail: canvas.detail,
+    startDate: canvas.startDate,
+    endDate: canvas.endDate,
     problem: {
-      topProblems: canvas.problem.topProblems.map(mapItem),
-      existingAlternatives: canvas.problem.existingAlternatives.map(mapItem),
+      topProblems: canvas.problem.topProblems.map(mapQual),
+      existingAlternatives: canvas.problem.existingAlternatives.map(mapQual),
     },
     solution: {
-      features: canvas.solution.features.map(mapItem),
+      features: canvas.solution.features.map(mapQual),
     },
     customerSegments: {
-      targetUsers: canvas.customerSegments.targetUsers.map(mapItem),
-      earlyAdopters: canvas.customerSegments.earlyAdopters.map(mapItem),
+      targetUsers: canvas.customerSegments.targetUsers.map(mapQual),
+      earlyAdopters: canvas.customerSegments.earlyAdopters.map(mapQual),
     },
     valueProposition: {
-      statements: canvas.valueProposition.statements.map(mapItem),
-      highLevelConcepts: canvas.valueProposition.highLevelConcepts.map(mapItem),
+      statements: canvas.valueProposition.statements.map(mapQual),
+      highLevelConcepts: canvas.valueProposition.highLevelConcepts.map(mapQual),
     },
     channels: {
-      paths: canvas.channels.paths.map(mapItem),
+      paths: canvas.channels.paths.map(mapQual),
     },
     costStructure: {
-      expenses: canvas.costStructure.expenses.map(mapItem),
+      expenses: canvas.costStructure.expenses.map(mapCost),
     },
     revenueStreams: {
-      returns: canvas.revenueStreams.returns.map(mapItem),
+      returns: canvas.revenueStreams.returns.map(mapRevenue),
     },
     keyMetrics: {
-      kpis: canvas.keyMetrics.kpis.map(mapItem),
+      kpis: canvas.keyMetrics.kpis.map(mapMetric),
     },
     unfairAdvantage: {
-      advantages: canvas.unfairAdvantage.advantages.map(mapItem),
+      advantages: canvas.unfairAdvantage.advantages.map(mapQual),
     },
   };
 }
@@ -75,6 +86,8 @@ export type JsonCanvasOptions = {
   byId?: Map<string, FractalLeanCanvas>;
   /** `$schema` URI for the versioned envelope (default: package URI). */
   $schema?: string;
+  /** ISO 4217 currency for the envelope (default: USD). */
+  currency?: string;
 };
 
 /**
@@ -88,11 +101,10 @@ export function jsonCanvas(
     options.byId === undefined
       ? canvas
       : inlineCanvasNodes(canvas, options.byId);
-  // Top-level expansion never returns a cycle stub (ancestors start empty).
   const data = inlined as FractalLeanCanvas;
-  const envelope: VersionedFractalEnvelope = versionedEnvelope(
-    data,
-    options.$schema ?? DEFAULT_SCHEMA_URI,
-  );
+  const envelope: VersionedFractalEnvelope = versionedEnvelope(data, {
+    $schema: options.$schema ?? DEFAULT_SCHEMA_URI,
+    currency: options.currency,
+  });
   return `${JSON.stringify(envelope, null, 2)}\n`;
 }

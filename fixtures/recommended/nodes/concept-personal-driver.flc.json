@@ -2,6 +2,9 @@
   "id": "concept-personal-driver",
   "title": "High-level concept: personal driver in your pocket",
   "ownerId": "human",
+  "detail": "Sponsored by root exp-concept-marketing. Narrative depth only exists because demo rides cost money.",
+  "startDate": "2010-01-01",
+  "endDate": "2010-12-31",
   "problem": {
     "topProblems": [
       {
@@ -68,21 +71,24 @@
       {
         "id": "exp-demo-rides",
         "title": "Demo / subsidy rides for influencers",
-        "value": 5000
+        "amountMinor": 500000,
+        "cadence": { "type": "recurring", "every": 1, "unit": "month" }
       }
     ]
   },
   "revenueStreams": {
-    "returns": [
-      {
-        "id": "rev-wom",
-        "title": "Viral WOM from memorable first rides",
-        "value": 0
-      }
-    ]
+    "returns": []
   },
   "keyMetrics": {
-    "kpis": [{ "id": "kpi-recall", "title": "Pitch recall rate", "value": 0.8 }]
+    "kpis": [
+      {
+        "id": "kpi-recall",
+        "title": "Pitch recall rate",
+        "targetValue": 0.8,
+        "comparator": "gte",
+        "unit": "ratio"
+      }
+    ]
   },
   "unfairAdvantage": {
     "advantages": [

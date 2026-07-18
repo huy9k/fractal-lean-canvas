@@ -1,13 +1,19 @@
 import type {
   CanvasLineItem,
   CanvasSlot,
+  CostLineItem,
   FractalLeanCanvas,
+  MetricLineItem,
+  RevenueLineItem,
 } from "../schema/canvas.js";
+import { formatCadence, formatMoney } from "../finance/index.js";
 import { collectCanvasSlots } from "../validate/semantic.js";
 
 export type MarkdownCanvasOptions = {
   /** Markdown heading level for the canvas title (1–6). */
   headingLevel?: number;
+  /** ISO 4217 currency for money display (default: USD). */
+  currency?: string;
 };
 
 /** Format a child-node pointer as a compact inline link. */
@@ -15,19 +21,47 @@ function nodeRef(slot: CanvasSlot | undefined): string {
   return slot ? ` → \`${slot.id}\`` : "";
 }
 
-/** USD / KPI numeric display. */
-function formatValue(value: number): string {
+/** Format a KPI target number. */
+function formatTarget(value: number): string {
   return Number.isInteger(value)
     ? value.toLocaleString("en-US")
     : String(value);
 }
 
-/** Human line for a CanvasLineItem (title-first; id stays machine-only). */
+/** Human line for a qualitative CanvasLineItem. */
 function lineText(item: CanvasLineItem): string {
   const bits = [item.title];
   if (item.detail) bits.push(item.detail);
-  if (item.value !== undefined) bits.push(`**${formatValue(item.value)}**`);
-  return `${bits.join(" — ")}${nodeRef(item.node)}`;
+  return bits.join(" — ");
+}
+
+/** Human line for a timed money item. */
+function moneyLine(
+  item: CostLineItem | RevenueLineItem,
+  currency: string,
+  withNode: boolean,
+): string {
+  const money = formatMoney(item.amountMinor, currency);
+  const cadence = formatCadence(item.cadence);
+  const bits = [
+    `${item.title} — **${money}${cadence === "one-time" ? ` ${cadence}` : cadence}**`,
+  ];
+  if (item.detail) bits.push(item.detail);
+  if (item.startDate || item.endDate) {
+    bits.push(`${item.startDate ?? "…"}→${item.endDate ?? "…"}`);
+  }
+  const node = withNode && "node" in item ? nodeRef(item.node) : "";
+  return `${bits.join(" — ")}${node}`;
+}
+
+/** Human line for a metric. */
+function metricLine(item: MetricLineItem): string {
+  const unit = item.unit ? ` ${item.unit}` : "";
+  const bits = [
+    `${item.title} — **${item.comparator} ${formatTarget(item.targetValue)}${unit}**`,
+  ];
+  if (item.detail) bits.push(item.detail);
+  return bits.join(" — ");
 }
 
 /** Emit a markdown heading clamped to levels 1–6. */
@@ -44,12 +78,17 @@ export function markdownCanvas(
   options: MarkdownCanvasOptions = {},
 ): string {
   const h = options.headingLevel ?? 1;
+  const currency = options.currency ?? "USD";
   const lines: string[] = [];
 
   lines.push(heading(h, canvas.title));
   lines.push("");
   lines.push(`- **id:** \`${canvas.id}\``);
   lines.push(`- **owner:** \`${canvas.ownerId}\``);
+  lines.push(`- **window:** ${canvas.startDate} → ${canvas.endDate}`);
+  if (canvas.detail) {
+    lines.push(`- **detail:** ${canvas.detail}`);
+  }
   lines.push("");
 
   lines.push(heading(h + 1, "Problem"));
@@ -144,11 +183,7 @@ export function markdownCanvas(
     lines.push("");
   } else {
     for (const e of canvas.costStructure.expenses) {
-      const amount =
-        e.value !== undefined ? ` — **$${formatValue(e.value)}**` : "";
-      lines.push(
-        `- ${e.title}${amount}${e.detail ? ` — ${e.detail}` : ""}${nodeRef(e.node)}`,
-      );
+      lines.push(`- ${moneyLine(e, currency, true)}`);
     }
     lines.push("");
   }
@@ -160,11 +195,7 @@ export function markdownCanvas(
     lines.push("");
   } else {
     for (const r of canvas.revenueStreams.returns) {
-      const amount =
-        r.value !== undefined ? ` — **$${formatValue(r.value)}**` : "";
-      lines.push(
-        `- ${r.title}${amount}${r.detail ? ` — ${r.detail}` : ""}${nodeRef(r.node)}`,
-      );
+      lines.push(`- ${moneyLine(r, currency, false)}`);
     }
     lines.push("");
   }
@@ -176,9 +207,7 @@ export function markdownCanvas(
     lines.push("");
   } else {
     for (const k of canvas.keyMetrics.kpis) {
-      const target =
-        k.value !== undefined ? ` target **${formatValue(k.value)}**` : "";
-      lines.push(`- ${k.title}${target}${nodeRef(k.node)}`);
+      lines.push(`- ${metricLine(k)}`);
     }
     lines.push("");
   }
@@ -203,6 +232,7 @@ export function markdownCanvas(
 export function markdownEcosystem(
   root: FractalLeanCanvas,
   byId: Map<string, FractalLeanCanvas>,
+  options: { currency?: string } = {},
 ): string {
   const parts: string[] = [];
   const visited = new Set<string>();
@@ -213,7 +243,10 @@ export function markdownEcosystem(
 
     if (parts.length > 0) parts.push("\n---\n");
     parts.push(
-      markdownCanvas(canvas, { headingLevel: Math.min(6, depth + 1) }),
+      markdownCanvas(canvas, {
+        headingLevel: Math.min(6, depth + 1),
+        currency: options.currency,
+      }),
     );
 
     for (const { slot } of collectCanvasSlots(canvas, "")) {

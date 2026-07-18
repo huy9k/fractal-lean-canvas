@@ -1,9 +1,19 @@
 import {
-  collectLineItems,
+  collectAllLineItemIds,
+  collectCostItems,
   isEmbeddedCanvas,
   type CanvasSlot,
   type FractalLeanCanvas,
 } from "../schema/canvas.js";
+import {
+  compareIsoDate,
+  effectiveWindow,
+  intersectWindows,
+  netBurnMinor,
+  parseIsoDate,
+  totalMinor,
+  type DateWindow,
+} from "../finance/index.js";
 
 export const MAX_CANVAS_DEPTH = 16;
 
@@ -37,17 +47,19 @@ export type SemanticWalkOptions = {
   walkedFiles?: Set<string>;
   /** Canvas objects whose ids were already registered (shared across ecosystem walks). */
   idsRegisteredFor?: WeakSet<object>;
+  /** Child canvas id → first parent cost-slot path (tree, not DAG). */
+  parentByChildId?: Map<string, string>;
 };
 
 /**
- * Collect direct child node slots from every line item.
+ * Collect direct child node slots from cost line items only.
  */
 export function collectCanvasSlots(
   canvas: FractalLeanCanvas,
   basePath: string,
 ): NestedCanvasSlot[] {
   const slots: NestedCanvasSlot[] = [];
-  for (const { path, item } of collectLineItems(canvas)) {
+  for (const { path, item } of collectCostItems(canvas)) {
     if (item.node) {
       slots.push({ path: `${basePath}/${path}/node`, slot: item.node });
     }
@@ -55,17 +67,9 @@ export function collectCanvasSlots(
   return slots;
 }
 
-/** Sum expense line-item values on a canvas. */
-function expenseTotal(canvas: FractalLeanCanvas): number {
-  return canvas.costStructure.expenses.reduce(
-    (sum, e) => sum + (e.value ?? 0),
-    0,
-  );
-}
-
 /**
- * Semantic rules: unique ids, max depth, cycle guard, budget rollups.
- * Embedded canvases under `node` are always walked; `{ id }` refs need `resolveCanvasId`.
+ * Semantic rules: unique ids, max depth, cycle guard, date bounds, cost rollups.
+ * Embedded canvases under cost `node` are always walked; `{ id }` refs need `resolveCanvasId`.
  */
 export function validateSemantic(
   root: FractalLeanCanvas,
@@ -76,6 +80,7 @@ export function validateSemantic(
   const seenIds = options.seenIds ?? new Map<string, string>();
   const walkedFiles = options.walkedFiles ?? new Set<string>();
   const idsRegisteredFor = options.idsRegisteredFor ?? new WeakSet<object>();
+  const parentByChildId = options.parentByChildId ?? new Map<string, string>();
   const startFile = options.file ?? "";
   const dfsStack = new Set<object>();
   const idStack: string[] = [];
@@ -121,7 +126,6 @@ export function validateSemantic(
       return undefined;
     }
 
-    // Nested canvases (e.g. flc json -r) walk in-document; no file resolve.
     if (isEmbeddedCanvas(slot)) {
       return { canvas: slot, file: fromFile };
     }
@@ -137,11 +141,76 @@ export function validateSemantic(
     return result;
   };
 
+  const validateCanvasDates = (
+    canvas: FractalLeanCanvas,
+    path: string,
+    file: string,
+  ): DateWindow | undefined => {
+    try {
+      parseIsoDate(canvas.startDate);
+      parseIsoDate(canvas.endDate);
+    } catch (err) {
+      pushIssue(
+        {
+          path: `${path}/startDate`,
+          message: err instanceof Error ? err.message : String(err),
+        },
+        file,
+      );
+      return undefined;
+    }
+    if (compareIsoDate(canvas.startDate, canvas.endDate) > 0) {
+      pushIssue(
+        {
+          path: `${path}/endDate`,
+          message: `Canvas endDate ${canvas.endDate} is before startDate ${canvas.startDate}`,
+        },
+        file,
+      );
+      return undefined;
+    }
+    return { start: canvas.startDate, end: canvas.endDate };
+  };
+
+  const validateTimedItems = (
+    canvas: FractalLeanCanvas,
+    path: string,
+    file: string,
+  ): void => {
+    for (const expense of canvas.costStructure.expenses) {
+      try {
+        effectiveWindow(expense, canvas);
+      } catch (err) {
+        pushIssue(
+          {
+            path: `${path}/costStructure/expenses/${expense.id}`,
+            message: err instanceof Error ? err.message : String(err),
+          },
+          file,
+        );
+      }
+    }
+    for (const ret of canvas.revenueStreams.returns) {
+      try {
+        effectiveWindow(ret, canvas);
+      } catch (err) {
+        pushIssue(
+          {
+            path: `${path}/revenueStreams/returns/${ret.id}`,
+            message: err instanceof Error ? err.message : String(err),
+          },
+          file,
+        );
+      }
+    }
+  };
+
   const walk = (
     canvas: FractalLeanCanvas,
     path: string,
     depth: number,
     file: string,
+    parentWindow: DateWindow | undefined,
   ): void => {
     if (dfsStack.has(canvas)) {
       pushIssue({ path, message: "Cycle detected in canvas graph" }, file);
@@ -163,44 +232,85 @@ export function validateSemantic(
       return;
     }
 
-    if (!idsRegisteredFor.has(canvas)) {
-      idsRegisteredFor.add(canvas);
-      registerId(canvas.id, `${path}/id`, file);
-      for (const { path: itemPath, item } of collectLineItems(canvas)) {
-        registerId(item.id, `${path}/${itemPath}/id`, file);
-      }
-    }
-
-    // Per-expense mitigation budget must not exceed the expense value.
-    for (const expense of canvas.costStructure.expenses) {
-      if (!expense.node || expense.value === undefined) continue;
-      const slotPath = `${path}/costStructure/expenses/${expense.id}/node`;
-      const resolved = resolveChild(expense.node, slotPath, file);
-      if (!resolved) continue;
-      const childTotal = expenseTotal(resolved.canvas);
-      if (childTotal > expense.value) {
+    const canvasWindow = validateCanvasDates(canvas, path, file);
+    if (canvasWindow && parentWindow) {
+      if (
+        compareIsoDate(canvasWindow.start, parentWindow.start) < 0 ||
+        compareIsoDate(canvasWindow.end, parentWindow.end) > 0
+      ) {
         pushIssue(
           {
-            path: slotPath,
-            message: `Mitigation expenses (${childTotal}) exceed expense value (${expense.value})`,
+            path,
+            message: `Child canvas window ${canvasWindow.start}…${canvasWindow.end} exceeds parent window ${parentWindow.start}…${parentWindow.end}`,
           },
           file,
         );
       }
     }
 
-    const parentTotal = expenseTotal(canvas);
+    if (!idsRegisteredFor.has(canvas)) {
+      idsRegisteredFor.add(canvas);
+      registerId(canvas.id, `${path}/id`, file);
+      for (const { path: itemPath, id } of collectAllLineItemIds(canvas)) {
+        registerId(id, `${path}/${itemPath}/id`, file);
+      }
+    }
 
-    for (const child of collectCanvasSlots(canvas, path)) {
-      const resolved = resolveChild(child.slot, child.path, file);
+    validateTimedItems(canvas, path, file);
+
+    // Cost-excuse rollup: child net burn ≤ sponsoring expense over overlap.
+    for (const expense of canvas.costStructure.expenses) {
+      if (!expense.node) continue;
+      const slotPath = `${path}/costStructure/expenses/${expense.id}/node`;
+      const resolved = resolveChild(expense.node, slotPath, file);
       if (!resolved) continue;
 
-      const childTotal = expenseTotal(resolved.canvas);
-      if (parentTotal > 0 && childTotal > parentTotal) {
+      const priorParent = parentByChildId.get(resolved.canvas.id);
+      if (priorParent !== undefined && priorParent !== slotPath) {
         pushIssue(
           {
-            path: child.path,
-            message: `Child expense total (${childTotal}) exceeds parent total (${parentTotal})`,
+            path: slotPath,
+            message: `Canvas "${resolved.canvas.id}" already sponsored by ${priorParent} (tree, not DAG)`,
+          },
+          file,
+        );
+      } else {
+        parentByChildId.set(resolved.canvas.id, slotPath);
+      }
+
+      try {
+        const expenseWindow = effectiveWindow(expense, canvas);
+        const childWindow: DateWindow = {
+          start: resolved.canvas.startDate,
+          end: resolved.canvas.endDate,
+        };
+        const overlap = intersectWindows(expenseWindow, childWindow);
+        if (!overlap) {
+          pushIssue(
+            {
+              path: slotPath,
+              message: `Sponsoring expense window ${expenseWindow.start}…${expenseWindow.end} does not overlap child ${childWindow.start}…${childWindow.end}`,
+            },
+            file,
+          );
+        } else {
+          const sponsorTotal = totalMinor(expense, overlap);
+          const childBurn = netBurnMinor(resolved.canvas, overlap);
+          if (childBurn > sponsorTotal) {
+            pushIssue(
+              {
+                path: slotPath,
+                message: `Child net burn (${childBurn}) exceeds sponsoring expense total (${sponsorTotal}) over ${overlap.start}…${overlap.end}`,
+              },
+              file,
+            );
+          }
+        }
+      } catch (err) {
+        pushIssue(
+          {
+            path: slotPath,
+            message: err instanceof Error ? err.message : String(err),
           },
           file,
         );
@@ -208,13 +318,13 @@ export function validateSemantic(
 
       const enteredNewFile = resolved.file !== file;
       if (enteredNewFile) walkedFiles.add(resolved.file);
-      walk(resolved.canvas, child.path, depth + 1, resolved.file);
+      walk(resolved.canvas, slotPath, depth + 1, resolved.file, canvasWindow);
     }
 
     idStack.pop();
     dfsStack.delete(canvas);
   };
 
-  walk(root, rootPath || `/${root.id}`, 0, startFile);
+  walk(root, rootPath || `/${root.id}`, 0, startFile, undefined);
   return issues;
 }

@@ -8,7 +8,10 @@ import {
 } from "node:path";
 import { readdir, readFile, stat } from "node:fs/promises";
 import type { FractalLeanCanvas } from "../../shared/schema/canvas.js";
-import { DEFAULT_SCHEMA_URI } from "../../shared/schema/envelope.js";
+import {
+  DEFAULT_CURRENCY,
+  DEFAULT_SCHEMA_URI,
+} from "../../shared/schema/envelope.js";
 import {
   ROOT_FILE_NAME,
   isEnvelope,
@@ -17,8 +20,14 @@ import {
   validateStructural,
 } from "../../shared/validate/structural.js";
 import { collectCanvasSlots } from "../../shared/validate/semantic.js";
-import { markdownCanvas, markdownEcosystem } from "../../shared/markdown/render.js";
-import { leanHtmlCanvas, leanHtmlEcosystem } from "../../shared/markdown/leanHtml.js";
+import {
+  markdownCanvas,
+  markdownEcosystem,
+} from "../../shared/markdown/render.js";
+import {
+  leanHtmlCanvas,
+  leanHtmlEcosystem,
+} from "../../shared/markdown/leanHtml.js";
 import { jsonCanvas } from "../../shared/json/inline.js";
 
 export type RenderFormat = "markdown" | "html-table" | "json";
@@ -77,11 +86,24 @@ async function findEcosystemRoot(
 type LoadedCanvas = {
   canvas: FractalLeanCanvas;
   $schema: string;
+  currency: string;
 };
 
 type LoadedEcosystem = LoadedCanvas & {
   byId: Map<string, FractalLeanCanvas>;
 };
+
+/** Read currency from a parsed envelope object. */
+function envelopeCurrency(parsed: object): string {
+  if (
+    "currency" in parsed &&
+    typeof parsed.currency === "string" &&
+    parsed.currency.length > 0
+  ) {
+    return parsed.currency.toUpperCase();
+  }
+  return DEFAULT_CURRENCY;
+}
 
 /**
  * Load every canvas under an ecosystem search root (requires root.json).
@@ -93,6 +115,7 @@ async function loadEcosystem(
   const byId = new Map<string, FractalLeanCanvas>();
   let root: FractalLeanCanvas | undefined;
   let $schema = DEFAULT_SCHEMA_URI;
+  let currency = DEFAULT_CURRENCY;
   const files = await collectJsonFiles(searchRoot);
   const rootAbsolute = normalize(resolve(rootFile));
 
@@ -121,6 +144,7 @@ async function loadEcosystem(
         typeof parsed.$schema === "string"
       ) {
         $schema = parsed.$schema;
+        currency = envelopeCurrency(parsed);
       }
       root = unwrapCanvas(parsed);
       byId.set(root.id, root);
@@ -141,7 +165,7 @@ async function loadEcosystem(
   }
 
   if (!root) return { message: `Failed to load ${ROOT_FILE_NAME}` };
-  return { canvas: root, byId, $schema };
+  return { canvas: root, byId, $schema, currency };
 }
 
 /** Parse a single JSON file into a canvas. */
@@ -170,6 +194,7 @@ async function loadSingleCanvas(
         typeof parsed.$schema === "string"
           ? parsed.$schema
           : DEFAULT_SCHEMA_URI,
+      currency: envelopeCurrency(parsed),
     };
   }
 
@@ -182,6 +207,7 @@ async function loadSingleCanvas(
   return {
     canvas: parsed as FractalLeanCanvas,
     $schema: DEFAULT_SCHEMA_URI,
+    currency: DEFAULT_CURRENCY,
   };
 }
 
@@ -210,16 +236,17 @@ function project(
   byId: Map<string, FractalLeanCanvas> | undefined,
   recursive: boolean,
   $schema: string,
+  currency: string,
 ): { output: string; filesRendered: number } {
   if (format === "json") {
     if (recursive && byId) {
       return {
-        output: jsonCanvas(start, { byId, $schema }),
+        output: jsonCanvas(start, { byId, $schema, currency }),
         filesRendered: reachableCount(start, byId),
       };
     }
     return {
-      output: jsonCanvas(start, { $schema }),
+      output: jsonCanvas(start, { $schema, currency }),
       filesRendered: 1,
     };
   }
@@ -227,13 +254,15 @@ function project(
   if (recursive && byId) {
     const output =
       format === "html-table"
-        ? leanHtmlEcosystem(start, byId)
-        : markdownEcosystem(start, byId);
+        ? leanHtmlEcosystem(start, byId, { currency })
+        : markdownEcosystem(start, byId, { currency });
     return { output, filesRendered: reachableCount(start, byId) };
   }
 
   const output =
-    format === "html-table" ? leanHtmlCanvas(start) : markdownCanvas(start);
+    format === "html-table"
+      ? leanHtmlCanvas(start, { currency })
+      : markdownCanvas(start, { currency });
   return { output, filesRendered: 1 };
 }
 
@@ -264,7 +293,14 @@ export async function renderFromPath(
     if ("message" in loaded) return { ok: false, message: loaded.message };
     return {
       ok: true,
-      ...project(format, loaded.canvas, loaded.byId, recursive, loaded.$schema),
+      ...project(
+        format,
+        loaded.canvas,
+        loaded.byId,
+        recursive,
+        loaded.$schema,
+        loaded.currency,
+      ),
     };
   }
 
@@ -274,14 +310,28 @@ export async function renderFromPath(
       if ("message" in single) return { ok: false, message: single.message };
       return {
         ok: true,
-        ...project(format, single.canvas, undefined, false, single.$schema),
+        ...project(
+          format,
+          single.canvas,
+          undefined,
+          false,
+          single.$schema,
+          single.currency,
+        ),
       };
     }
     const loaded = await loadEcosystem(dirname(absolute));
     if ("message" in loaded) return { ok: false, message: loaded.message };
     return {
       ok: true,
-      ...project(format, loaded.canvas, loaded.byId, true, loaded.$schema),
+      ...project(
+        format,
+        loaded.canvas,
+        loaded.byId,
+        true,
+        loaded.$schema,
+        loaded.currency,
+      ),
     };
   }
 
@@ -291,7 +341,14 @@ export async function renderFromPath(
   if (!recursive) {
     return {
       ok: true,
-      ...project(format, single.canvas, undefined, false, single.$schema),
+      ...project(
+        format,
+        single.canvas,
+        undefined,
+        false,
+        single.$schema,
+        single.currency,
+      ),
     };
   }
 
@@ -313,7 +370,14 @@ export async function renderFromPath(
   }
   return {
     ok: true,
-    ...project(format, start, loaded.byId, true, loaded.$schema),
+    ...project(
+      format,
+      start,
+      loaded.byId,
+      true,
+      loaded.$schema,
+      loaded.currency,
+    ),
   };
 }
 

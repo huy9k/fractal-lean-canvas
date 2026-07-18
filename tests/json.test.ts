@@ -13,6 +13,39 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const FIXTURE_DIR = join(ROOT, "fixtures", "recommended");
 const FIXTURE = join(FIXTURE_DIR, ROOT_FILE_NAME);
 
+const MONTHLY = {
+  type: "recurring" as const,
+  every: 1,
+  unit: "month" as const,
+};
+
+function baseCanvas(
+  id: string,
+  title: string,
+  extras: Partial<FractalLeanCanvas> = {},
+): FractalLeanCanvas {
+  return {
+    id,
+    title,
+    ownerId: "human",
+    startDate: "2026-01-01",
+    endDate: "2026-12-31",
+    problem: { topProblems: [], existingAlternatives: [] },
+    solution: { features: [] },
+    customerSegments: { targetUsers: [], earlyAdopters: [] },
+    valueProposition: {
+      statements: [{ id: `uvp-${id}`, title: id }],
+      highLevelConcepts: [],
+    },
+    channels: { paths: [] },
+    costStructure: { expenses: [] },
+    revenueStreams: { returns: [] },
+    keyMetrics: { kpis: [] },
+    unfairAdvantage: { advantages: [{ id: `moat-${id}`, title: id }] },
+    ...extras,
+  };
+}
+
 describe("FLC json", () => {
   it("json without -r emits a versioned envelope with id refs", async () => {
     const result = await jsonFromPath(FIXTURE);
@@ -22,50 +55,52 @@ describe("FLC json", () => {
     const parsed = JSON.parse(result.output) as {
       $schema: string;
       schemaVersion: string;
+      currency: string;
       data: FractalLeanCanvas;
     };
     assert.equal(parsed.schemaVersion, SCHEMA_VERSION);
+    assert.equal(parsed.currency, "USD");
     assert.ok(parsed.$schema.length > 0);
     assert.equal(parsed.data.id, "uber-lean-canvas");
-    const feature = parsed.data.solution.features.find(
-      (f) => f.id === "feat-on-demand-dispatch",
+    const infra = parsed.data.costStructure.expenses.find(
+      (e) => e.id === "exp-infra",
     );
-    assert.deepEqual(feature?.node, { id: "exec-on-demand-dispatch" });
+    assert.deepEqual(infra?.node, { id: "exec-on-demand-dispatch" });
     assert.doesNotMatch(
       result.output,
       /"title": "On-demand dispatch execution"/,
     );
   });
 
-  it("json -r inlines child canvases under node inside the envelope", async () => {
+  it("json -r inlines child canvases under cost node inside the envelope", async () => {
     const result = await jsonFromPath(FIXTURE_DIR, { recursive: true });
     assert.equal(result.ok, true);
     if (!result.ok) return;
     assert.ok(result.filesRendered >= 3);
     const parsed = JSON.parse(result.output) as {
       schemaVersion: string;
+      currency: string;
       data: {
-        solution: {
-          features: Array<{
+        costStructure: {
+          expenses: Array<{
             id: string;
-            node?: { id: string; title?: string };
-          }>;
-        };
-        valueProposition: {
-          highLevelConcepts: Array<{
             node?: { id: string; title?: string };
           }>;
         };
       };
     };
     assert.equal(parsed.schemaVersion, SCHEMA_VERSION);
-    const feature = parsed.data.solution.features.find(
-      (f) => f.id === "feat-on-demand-dispatch",
+    assert.equal(parsed.currency, "USD");
+    const infra = parsed.data.costStructure.expenses.find(
+      (e) => e.id === "exp-infra",
     );
-    assert.equal(feature?.node?.id, "exec-on-demand-dispatch");
-    assert.equal(feature?.node?.title, "On-demand dispatch execution");
+    assert.equal(infra?.node?.id, "exec-on-demand-dispatch");
+    assert.equal(infra?.node?.title, "On-demand dispatch execution");
+    const concept = parsed.data.costStructure.expenses.find(
+      (e) => e.id === "exp-concept-marketing",
+    );
     assert.equal(
-      parsed.data.valueProposition.highLevelConcepts[0]?.node?.title,
+      concept?.node?.title,
       "High-level concept: personal driver in your pocket",
     );
   });
@@ -80,75 +115,58 @@ describe("FLC json", () => {
   });
 
   it("inlineCanvasNodes leaves cycle stubs as id refs", () => {
-    const a: FractalLeanCanvas = {
-      id: "a",
-      title: "A",
-      ownerId: "human",
-      problem: { topProblems: [], existingAlternatives: [] },
-      solution: {
-        features: [{ id: "f", title: "to b", node: { id: "b" } }],
+    const a = baseCanvas("a", "A", {
+      costStructure: {
+        expenses: [
+          {
+            id: "exp-a",
+            title: "to b",
+            amountMinor: 100,
+            cadence: MONTHLY,
+            node: { id: "b" },
+          },
+        ],
       },
-      customerSegments: { targetUsers: [], earlyAdopters: [] },
-      valueProposition: {
-        statements: [{ id: "uvp-a", title: "a" }],
-        highLevelConcepts: [],
+    });
+    const b = baseCanvas("b", "B", {
+      costStructure: {
+        expenses: [
+          {
+            id: "exp-b",
+            title: "to a",
+            amountMinor: 100,
+            cadence: MONTHLY,
+            node: { id: "a" },
+          },
+        ],
       },
-      channels: { paths: [] },
-      costStructure: { expenses: [] },
-      revenueStreams: { returns: [] },
-      keyMetrics: { kpis: [] },
-      unfairAdvantage: { advantages: [{ id: "moat-a", title: "a" }] },
-    };
-    const b: FractalLeanCanvas = {
-      ...a,
-      id: "b",
-      title: "B",
-      solution: {
-        features: [{ id: "f2", title: "to a", node: { id: "a" } }],
-      },
-      valueProposition: {
-        statements: [{ id: "uvp-b", title: "b" }],
-        highLevelConcepts: [],
-      },
-      unfairAdvantage: { advantages: [{ id: "moat-b", title: "b" }] },
-    };
+    });
     const byId = new Map([
       ["a", a],
       ["b", b],
     ]);
     const inlined = inlineCanvasNodes(a, byId) as {
-      solution: { features: Array<{ node: { id: string; title?: string } }> };
+      costStructure: {
+        expenses: Array<{ node: { id: string; title?: string } }>;
+      };
     };
-    assert.equal(inlined.solution.features[0]?.node.id, "b");
-    assert.equal(inlined.solution.features[0]?.node.title, "B");
+    assert.equal(inlined.costStructure.expenses[0]?.node.id, "b");
+    assert.equal(inlined.costStructure.expenses[0]?.node.title, "B");
     const back = (
-      inlined.solution.features[0]?.node as {
-        solution: { features: Array<{ node: { id: string; title?: string } }> };
+      inlined.costStructure.expenses[0]?.node as {
+        costStructure: {
+          expenses: Array<{ node: { id: string; title?: string } }>;
+        };
       }
-    ).solution.features[0]?.node;
+    ).costStructure.expenses[0]?.node;
     assert.deepEqual(back, { id: "a" });
   });
 
   it("jsonCanvas pretty-prints a versioned envelope", () => {
-    const canvas: FractalLeanCanvas = {
-      id: "x",
-      title: "X",
-      ownerId: "human",
-      problem: { topProblems: [], existingAlternatives: [] },
-      solution: { features: [] },
-      customerSegments: { targetUsers: [], earlyAdopters: [] },
-      valueProposition: {
-        statements: [{ id: "uvp", title: "v" }],
-        highLevelConcepts: [],
-      },
-      channels: { paths: [] },
-      costStructure: { expenses: [] },
-      revenueStreams: { returns: [] },
-      keyMetrics: { kpis: [] },
-      unfairAdvantage: { advantages: [{ id: "moat", title: "m" }] },
-    };
+    const canvas = baseCanvas("x", "X");
     const out = jsonCanvas(canvas);
     assert.match(out, new RegExp(`"schemaVersion": "${SCHEMA_VERSION}"`));
+    assert.match(out, /"currency": "USD"/);
     assert.match(out, /"id": "x"/);
     assert.ok(out.endsWith("\n"));
   });

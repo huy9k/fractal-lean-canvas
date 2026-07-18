@@ -2,6 +2,9 @@
   "id": "exec-on-demand-dispatch",
   "title": "On-demand dispatch execution",
   "ownerId": "agent-dispatch",
+  "detail": "Sponsored by root exp-infra. Net burn must stay within that infra budget over the shared window.",
+  "startDate": "2010-01-01",
+  "endDate": "2010-12-31",
   "problem": {
     "topProblems": [
       {
@@ -77,12 +80,14 @@
       {
         "id": "exp-maps",
         "title": "Realtime location and routing APIs",
-        "value": 8000
+        "amountMinor": 800000,
+        "cadence": { "type": "recurring", "every": 1, "unit": "month" }
       },
       {
         "id": "exp-compute",
         "title": "Dispatch / matching service compute",
-        "value": 12000
+        "amountMinor": 1200000,
+        "cadence": { "type": "recurring", "every": 1, "unit": "month" }
       }
     ]
   },
@@ -91,15 +96,34 @@
       {
         "id": "rev-dispatch-trips",
         "title": "Completed trips attributable to dispatch quality",
-        "value": 90000
+        "amountMinor": 9000000,
+        "cadence": { "type": "recurring", "every": 1, "unit": "month" }
       }
     ]
   },
   "keyMetrics": {
     "kpis": [
-      { "id": "kpi-eta", "title": "Median ETA in minutes", "value": 5 },
-      { "id": "kpi-match", "title": "Match success rate", "value": 0.95 },
-      { "id": "kpi-cancel", "title": "Cancel rate", "value": 0.08 }
+      {
+        "id": "kpi-eta",
+        "title": "Median ETA in minutes",
+        "targetValue": 5,
+        "comparator": "lte",
+        "unit": "minutes"
+      },
+      {
+        "id": "kpi-match",
+        "title": "Match success rate",
+        "targetValue": 0.95,
+        "comparator": "gte",
+        "unit": "ratio"
+      },
+      {
+        "id": "kpi-cancel",
+        "title": "Cancel rate",
+        "targetValue": 0.08,
+        "comparator": "lte",
+        "unit": "ratio"
+      }
     ]
   },
   "unfairAdvantage": {

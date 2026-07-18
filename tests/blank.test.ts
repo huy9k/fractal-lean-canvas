@@ -30,6 +30,9 @@ describe("FLC blank templates", () => {
     const issues = validateDocument(envelope, ROOT_FILE_NAME);
     assert.equal(issues.length, 0);
     assert.equal(envelope.data.title, "Root");
+    assert.equal(envelope.currency, "USD");
+    assert.equal(envelope.data.startDate, "2026-01-01");
+    assert.equal(envelope.data.endDate, "2026-12-31");
   });
 
   it("blank JSON helpers end with a newline", () => {

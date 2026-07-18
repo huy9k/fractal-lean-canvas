@@ -1,10 +1,14 @@
 {
-  "$schema": "https://raw.githubusercontent.com/huy9k/fractal-lean-canvas/raw-schema-json/envelope-0.12.0.json",
-  "schemaVersion": "0.12.0",
+  "$schema": "https://raw.githubusercontent.com/huy9k/fractal-lean-canvas/raw-schema-json/envelope-0.13.0.json",
+  "schemaVersion": "0.13.0",
+  "currency": "USD",
   "data": {
     "id": "uber-lean-canvas",
     "title": "Uber (early Lean Canvas)",
     "ownerId": "human",
+    "detail": "Role-model Ops-as-Code canvas: fractal depth only where a cost line sponsors the child. Planning year 2010.",
+    "startDate": "2010-01-01",
+    "endDate": "2010-12-31",
     "problem": {
       "topProblems": [
         {
@@ -43,10 +47,7 @@
       "features": [
         {
           "id": "feat-on-demand-dispatch",
-          "title": "Mobile app that matches riders with nearby drivers in minutes",
-          "node": {
-            "id": "exec-on-demand-dispatch"
-          }
+          "title": "Mobile app that matches riders with nearby drivers in minutes"
         },
         {
           "id": "feat-cashless-pay",
@@ -100,10 +101,7 @@
         {
           "id": "hlc-personal-driver",
           "title": "Personal driver in your pocket",
-          "detail": "X-for-Y: Uber = on-demand private car service via smartphone",
-          "node": {
-            "id": "concept-personal-driver"
-          }
+          "detail": "X-for-Y: Uber = on-demand private car service via smartphone"
         }
       ]
     },
@@ -132,22 +130,36 @@
         {
           "id": "exp-city-gm",
           "title": "City GM / ops wages",
-          "value": 25000
+          "amountMinor": 2500000,
+          "cadence": { "type": "recurring", "every": 1, "unit": "month" }
         },
         {
           "id": "exp-infra",
           "title": "App, web, SMS, and mapping infrastructure",
-          "value": 40000
+          "detail": "Sponsors the on-demand dispatch execution canvas — fractal depth requires a cost excuse",
+          "amountMinor": 4000000,
+          "cadence": { "type": "recurring", "every": 1, "unit": "month" },
+          "node": { "id": "exec-on-demand-dispatch" }
         },
         {
           "id": "exp-driver-incentives",
           "title": "Driver incentives and launch subsidies",
-          "value": 30000
+          "amountMinor": 3000000,
+          "cadence": { "type": "recurring", "every": 1, "unit": "month" }
         },
         {
           "id": "exp-compliance",
           "title": "Insurance, legal, and local compliance",
-          "value": 15000
+          "amountMinor": 1500000,
+          "cadence": { "type": "recurring", "every": 1, "unit": "month" }
+        },
+        {
+          "id": "exp-concept-marketing",
+          "title": "Category-concept demos and pitch seeding",
+          "detail": "Pays for the 'personal driver in your pocket' concept canvas — no free narrative depth",
+          "amountMinor": 500000,
+          "cadence": { "type": "recurring", "every": 1, "unit": "month" },
+          "node": { "id": "concept-personal-driver" }
         }
       ]
     },
@@ -156,12 +168,14 @@
         {
           "id": "rev-take-rate",
           "title": "Commission take-rate on every completed trip",
-          "value": 120000
+          "amountMinor": 12000000,
+          "cadence": { "type": "recurring", "every": 1, "unit": "month" }
         },
         {
           "id": "rev-surge",
           "title": "Surge pricing during peak demand",
-          "value": 20000
+          "amountMinor": 2000000,
+          "cadence": { "type": "recurring", "every": 1, "unit": "month" }
         }
       ]
     },
@@ -170,22 +184,30 @@
         {
           "id": "kpi-dau",
           "title": "Daily active riders",
-          "value": 1000
+          "targetValue": 1000,
+          "comparator": "gte",
+          "unit": "riders"
         },
         {
           "id": "kpi-trips",
           "title": "Trips per day",
-          "value": 3000
+          "targetValue": 3000,
+          "comparator": "gte",
+          "unit": "trips/day"
         },
         {
           "id": "kpi-util",
           "title": "Driver utilization",
-          "value": 0.7
+          "targetValue": 0.7,
+          "comparator": "gte",
+          "unit": "ratio"
         },
         {
           "id": "kpi-rating",
           "title": "Avg ride rating",
-          "value": 4.8
+          "targetValue": 4.8,
+          "comparator": "gte",
+          "unit": "stars"
         }
       ]
     },

@@ -20,14 +20,10 @@ describe("FLC markdown / html-table", () => {
       id: "demo",
       title: "Demo",
       ownerId: "human",
+      startDate: "2026-01-01",
+      endDate: "2026-12-31",
       problem: {
-        topProblems: [
-          {
-            id: "p1",
-            title: "Pain",
-            node: { id: "child" },
-          },
-        ],
+        topProblems: [{ id: "p1", title: "Pain" }],
         existingAlternatives: [],
       },
       solution: { features: [] },
@@ -38,18 +34,39 @@ describe("FLC markdown / html-table", () => {
       },
       channels: { paths: [] },
       costStructure: {
-        expenses: [{ id: "exp-cloud", title: "Cloud", value: 1000 }],
+        expenses: [
+          {
+            id: "exp-cloud",
+            title: "Cloud",
+            amountMinor: 1000_00,
+            cadence: { type: "recurring", every: 1, unit: "month" },
+            node: { id: "child" },
+          },
+        ],
       },
       revenueStreams: { returns: [] },
-      keyMetrics: { kpis: [] },
+      keyMetrics: {
+        kpis: [
+          {
+            id: "kpi-x",
+            title: "Latency",
+            targetValue: 100,
+            comparator: "lte",
+            unit: "ms",
+          },
+        ],
+      },
       unfairAdvantage: { advantages: [{ id: "moat", title: "Moat" }] },
     };
-    const md = markdownCanvas(canvas);
+    const md = markdownCanvas(canvas, { currency: "USD" });
     assert.match(md, /^# Demo/m);
     assert.match(md, /- \*\*id:\*\* `demo`/);
-    assert.match(md, /Pain → `child`/);
+    assert.match(md, /2026-01-01 → 2026-12-31/);
+    assert.match(md, /Pain/);
     assert.doesNotMatch(md, /\*\*`p1`\*\*/);
-    assert.match(md, /Cloud — \*\*\$1,000\*\*/);
+    assert.match(md, /Cloud — \*\*USD 1,000\.00\/mo\*\*/);
+    assert.match(md, /→ `child`/);
+    assert.match(md, /Latency — \*\*lte 100 ms\*\*/);
     assert.match(md, /## Problem/);
   });
 

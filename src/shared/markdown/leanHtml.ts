@@ -1,13 +1,19 @@
 import type {
   CanvasLineItem,
   CanvasSlot,
+  CostLineItem,
   FractalLeanCanvas,
+  MetricLineItem,
+  RevenueLineItem,
 } from "../schema/canvas.js";
+import { formatCadence, formatMoney } from "../finance/index.js";
 import { collectCanvasSlots } from "../validate/semantic.js";
 
 export type LeanHtmlCanvasOptions = {
   /** HTML heading level for the title cell (1–6). */
   headingLevel?: number;
+  /** ISO 4217 currency for money display (default: USD). */
+  currency?: string;
 };
 
 /** Format a child-node pointer as an inline HTML link. */
@@ -24,26 +30,48 @@ function escapeHtml(text: string): string {
     .replace(/"/g, "&quot;");
 }
 
-/** Format numeric value for display. */
-function formatValue(value: number): string {
+/** Format a KPI target number. */
+function formatTarget(value: number): string {
   return Number.isInteger(value)
     ? value.toLocaleString("en-US")
     : String(value);
 }
 
-/** Human line for a CanvasLineItem (title-first). */
-function lineHtml(item: CanvasLineItem, money = false): string {
+/** Qualitative line HTML. */
+function lineHtml(item: CanvasLineItem): string {
   const parts = [escapeHtml(item.title)];
   if (item.detail) parts.push(escapeHtml(item.detail));
-  if (item.value !== undefined) {
-    const formatted = formatValue(item.value);
-    parts.push(
-      money
-        ? `<strong>$${formatted}</strong>`
-        : `<strong>${formatted}</strong>`,
-    );
-  }
-  return `${parts.join(" — ")}${nodeRef(item.node)}`;
+  return parts.join(" — ");
+}
+
+/** Timed money line HTML. */
+function moneyHtml(
+  item: CostLineItem | RevenueLineItem,
+  currency: string,
+  withNode: boolean,
+): string {
+  const money = formatMoney(item.amountMinor, currency);
+  const cadence = formatCadence(item.cadence);
+  const label =
+    cadence === "one-time" ? `${money} ${cadence}` : `${money}${cadence}`;
+  const parts = [
+    escapeHtml(item.title),
+    `<strong>${escapeHtml(label)}</strong>`,
+  ];
+  if (item.detail) parts.push(escapeHtml(item.detail));
+  const node = withNode && "node" in item ? nodeRef(item.node) : "";
+  return `${parts.join(" — ")}${node}`;
+}
+
+/** Metric line HTML. */
+function metricHtml(item: MetricLineItem): string {
+  const unit = item.unit ? ` ${item.unit}` : "";
+  const parts = [
+    escapeHtml(item.title),
+    `<strong>${escapeHtml(item.comparator)} ${formatTarget(item.targetValue)}${escapeHtml(unit)}</strong>`,
+  ];
+  if (item.detail) parts.push(escapeHtml(item.detail));
+  return parts.join(" — ");
 }
 
 /** Emit an HTML heading clamped to levels 1–6. */
@@ -69,6 +97,7 @@ function box(title: string, body: string): string {
 function leanCanvasTable(
   canvas: FractalLeanCanvas,
   headingLevel: number,
+  currency: string,
 ): string {
   const problems = bullets(canvas.problem.topProblems.map((p) => lineHtml(p)));
   const alternatives =
@@ -79,7 +108,7 @@ function leanCanvasTable(
         )}`;
 
   const solutions = bullets(canvas.solution.features.map((f) => lineHtml(f)));
-  const metrics = bullets(canvas.keyMetrics.kpis.map((k) => lineHtml(k)));
+  const metrics = bullets(canvas.keyMetrics.kpis.map((k) => metricHtml(k)));
   const uvpStatements = bullets(
     canvas.valueProposition.statements.map((s) => lineHtml(s)),
   );
@@ -104,15 +133,15 @@ function leanCanvasTable(
           canvas.customerSegments.earlyAdopters.map((a) => lineHtml(a)),
         )}`;
   const costs = bullets(
-    canvas.costStructure.expenses.map((e) => lineHtml(e, true)),
+    canvas.costStructure.expenses.map((e) => moneyHtml(e, currency, true)),
   );
   const revenue = bullets(
-    canvas.revenueStreams.returns.map((r) => lineHtml(r, true)),
+    canvas.revenueStreams.returns.map((r) => moneyHtml(r, currency, false)),
   );
 
   const header = [
     heading(headingLevel, canvas.title),
-    `<code>${escapeHtml(canvas.id)}</code> · owner <code>${escapeHtml(canvas.ownerId)}</code>`,
+    `<code>${escapeHtml(canvas.id)}</code> · owner <code>${escapeHtml(canvas.ownerId)}</code> · ${escapeHtml(canvas.startDate)} → ${escapeHtml(canvas.endDate)} · ${escapeHtml(currency)}`,
   ].join("<br/>");
 
   return [
@@ -149,13 +178,15 @@ export function leanHtmlCanvas(
   options: LeanHtmlCanvasOptions = {},
 ): string {
   const h = options.headingLevel ?? 1;
-  return leanCanvasTable(canvas, h).trimEnd() + "\n";
+  const currency = options.currency ?? "USD";
+  return leanCanvasTable(canvas, h, currency).trimEnd() + "\n";
 }
 
 /** Render root + reachable nests as Lean Canvas HTML (DFS). */
 export function leanHtmlEcosystem(
   root: FractalLeanCanvas,
   byId: Map<string, FractalLeanCanvas>,
+  options: { currency?: string } = {},
 ): string {
   const parts: string[] = [];
   const visited = new Set<string>();
@@ -166,7 +197,10 @@ export function leanHtmlEcosystem(
 
     if (parts.length > 0) parts.push("\n<hr/>\n");
     parts.push(
-      leanHtmlCanvas(canvas, { headingLevel: Math.min(6, depth + 1) }),
+      leanHtmlCanvas(canvas, {
+        headingLevel: Math.min(6, depth + 1),
+        currency: options.currency,
+      }),
     );
 
     for (const { slot } of collectCanvasSlots(canvas, "")) {
