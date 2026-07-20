@@ -1,0 +1,55 @@
+name: Publish fixture index
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "fixtures/**"
+      - "scripts/build-fixture-index.mjs"
+      - ".github/workflows/publish-fixture-index.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  publish-fixture-index:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build fixture indexes
+        run: node scripts/build-fixture-index.mjs
+
+      # Orphan commit + force-push so `fixture-index` always has exactly one commit.
+      - name: Publish fixture-index branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          make_tree() {
+            local dir="$1"
+            {
+              local item name oid
+              for item in "$dir"/*; do
+                [ -e "$item" ] || continue
+                name=$(basename "$item")
+                if [ -d "$item" ]; then
+                  oid=$(make_tree "$item")
+                  printf '040000 tree %s\t%s\n' "$oid" "$name"
+                else
+                  oid=$(git hash-object -w "$item")
+                  printf '100644 blob %s\t%s\n' "$oid" "$name"
+                fi
+              done
+            } | git mktree
+          }
+
+          TREE=$(make_tree .fixture-index)
+          COMMIT=$(git commit-tree "$TREE" -m "Update fixture index")
+          git push --force origin "$COMMIT:refs/heads/fixture-index"

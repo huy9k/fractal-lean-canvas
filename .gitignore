@@ -1,5 +1,6 @@
 node_modules/
 dist/
+.fixture-index/
 *.tsbuildinfo
 *.tgz
 .DS_Store
