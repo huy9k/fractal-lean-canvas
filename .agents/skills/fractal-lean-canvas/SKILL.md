@@ -77,7 +77,7 @@ Host tip: some apps expose an FLC index API (e.g. Hub `getFlcIndex`) — use it 
 - **Root file:** keep `$schema`, `schemaVersion`, `currency`; mutate only `data` (and currency when intentional).
 - **Child file:** bare object — never wrap children in an envelope.
 - **New child:** create bare canvas → add `node: { "id": "<child-id>" }` on exactly one parent expense → ensure child window fits parent / sponsor rules.
-- **Money:** `amountMinor` is integer minor units of envelope `currency` **per cadence tick**. Cadence is `one_time` or `recurring { every, unit }`.
+- **Money:** `amountMinor` is an integer in the envelope `currency`’s **minor unit** (not major units), **per cadence tick**. For `currency: "USD"`, that means **cents**: `$40,000.00` → `4000000`, `$12.50` → `1250`, `$1.00` → `100`. Never store dollars as a float or as a whole-dollar integer in `amountMinor`. Cadence is `one_time` or `recurring { every, unit }`.
 - Prefer `npx fractal-lean-canvas init` / `init --root` over hand-rolled blanks.
 
 ### 4. Validate
