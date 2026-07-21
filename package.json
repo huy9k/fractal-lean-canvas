@@ -18,7 +18,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    ".agents/skills"
   ],
   "scripts": {
     "build": "tsc",

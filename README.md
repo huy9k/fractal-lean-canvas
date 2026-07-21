@@ -6,6 +6,18 @@ This repo is the **schema authority**. Store live business canvases in a separat
 
 > **Pre-release.** This package is still unstable. Expect breaking changes without a major version bump until `1.0.0`.
 
+## Agent skill
+
+Operational playbook for agents (read / edit / validate FLC ecosystems):
+
+[`.agents/skills/fractal-lean-canvas/SKILL.md`](.agents/skills/fractal-lean-canvas/SKILL.md)
+
+Install into another project with the Agent Skills CLI:
+
+```bash
+npx skills add huy9k/fractal-lean-canvas
+```
+
 ## Install
 
 ```bash
