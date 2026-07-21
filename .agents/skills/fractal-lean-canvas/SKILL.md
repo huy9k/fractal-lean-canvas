@@ -19,7 +19,7 @@ FLC is a **recursive Lean Canvas** contract: every node shares one shape; child 
 ## Critical rules
 
 1. **Never reason from a single `.flc.json` alone.** Discover the ecosystem (`root.flc.json` + all bare canvases), then read the open canvas and its cost-sponsored children.
-2. **Fractal nesting only on cost.** Child link is `costStructure.expenses[].node: { "id": "..." }`. No drill-down from UVP, segments, etc.
+2. **Fractal nesting only on cost.** Child link is `costStructure.expenses[].node: { "id": "..." }`. No drill-down from UVP, segments, revenue, or a canvas-level `children` list. Nested nodes are **cost centers** under **budgetary control** — see [nesting.md](references/nesting.md).
 3. **Tree, not DAG.** Each child canvas has at most one sponsoring expense; ids are unique; children must not target the root id.
 4. **Root vs bare.** Only `root.flc.json` is a versioned envelope (`schemaVersion`, `currency`, `data`). Every other `*.flc.json` is a bare `FractalLeanCanvas`.
 5. **Ids rule nesting, not paths.** Filename ≈ `id` is a convenience. Links resolve by canvas `id` across the tree.
@@ -132,12 +132,14 @@ import { validateEcosystem, markdownFromPath } from "fractal-lean-canvas/node";
 
 - Treating one canvas file as the whole business context
 - Putting child envelopes under `nodes/`
-- Linking children from non-cost fields
+- Linking children from non-cost fields (including revenue or canvas-level `children`)
+- Treating nesting as profit-center consolidation or rolling child profit into the parent
 - Sharing one child across multiple sponsoring expenses
 - Using `select`-style “dump everything” mental models — project id / title / sponsor / money fields you need
 - Encoding org-specific policy in the schema package (belongs in the state repo)
 
 ## References
 
+- [nesting.md](references/nesting.md) — why cost-center funding (not revenue / consolidation)
 - [layout.md](references/layout.md) — envelope vs bare, line-item kinds, recommended tree
 - [validation.md](references/validation.md) — structural / semantic / ecosystem checks

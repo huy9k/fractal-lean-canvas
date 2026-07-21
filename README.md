@@ -40,7 +40,7 @@ Source tree mirrors that split: `src/shared/` (pure), `src/node/` (`fs`), `src/c
 ## Concepts
 
 1. **One recursive shape** — Every node is a `FractalLeanCanvas` with the nine Lean Canvas dimensions and a required `startDate`/`endDate` window.
-2. **Cost-excuse fractal** — Child canvases attach only via `costStructure.expenses[].node`. No drill-down without a budget that sponsors it.
+2. **Cost-excuse fractal** — Child canvases attach only via `costStructure.expenses[].node`. Nested nodes are **cost centers** under **budgetary control** (child net burn ≤ sponsoring expense). No revenue rollup, no forced profitability, no canvas-level `children`. Design rationale (managerial-accounting vocabulary): [`.agents/skills/fractal-lean-canvas/references/nesting.md`](.agents/skills/fractal-lean-canvas/references/nesting.md).
 3. **Single root** — Each ecosystem has one `root.flc.json` versioned envelope (`schemaVersion` + ISO 4217 `currency`). All other JSON files are bare canvases ending with `.flc.json`.
 4. **Homogeneous traversal** — Agents walk the same structure at enterprise depth or task depth (`validateEcosystem` resolves canvas ids from the root).
 5. **Git holds truth** — Documents are JSON in Git. Version authority and settlement currency live only on the root envelope.

@@ -13,7 +13,7 @@ Use `npx fractal-lean-canvas validate <path>` or `validateEcosystem` from `fract
 - **Single parent:** each child id appears on at most one expense `node`.
 - **No root target:** a cost `node.id` must not equal the root canvas id.
 - **Date windows:** child / item dates must respect canvas and sponsor bounds.
-- **Net burn:** child costs − child revenues over the overlapping window must fit under the sponsoring expense (revenue assumed paid in time; no proration).
+- **Net burn:** child costs − child revenues over the overlapping window must fit under the sponsoring expense (revenue assumed paid in time; no proration). This is **budgetary control** on a cost center — not a profitability requirement. Rationale: [nesting.md](nesting.md).
 
 ## API split
 

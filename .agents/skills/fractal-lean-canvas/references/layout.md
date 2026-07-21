@@ -52,6 +52,8 @@ Timed money cadence:
 
 Drill-down for a concept lives under a **cost** line that sponsors a child canvas — not under UVP.
 
+Why only cost (responsibility accounting / cost centers, not profit rollup): [nesting.md](nesting.md).
+
 ## Recommended ecosystem tree
 
 ```
