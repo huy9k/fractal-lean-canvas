@@ -1,0 +1,26 @@
+{
+  "generatedAt": "2026-07-22T04:32:36.067Z",
+  "canvases": [
+    {
+      "id": "concept-personal-driver",
+      "title": "High-level concept: personal driver in your pocket",
+      "path": "fixtures/recommended/nodes/concept-personal-driver.flc.json",
+      "ownerId": "human",
+      "parentId": "uber-lean-canvas"
+    },
+    {
+      "id": "exec-on-demand-dispatch",
+      "title": "On-demand dispatch execution",
+      "path": "fixtures/recommended/nodes/exec-on-demand-dispatch.flc.json",
+      "ownerId": "agent-dispatch",
+      "parentId": "uber-lean-canvas"
+    },
+    {
+      "id": "uber-lean-canvas",
+      "title": "Uber (early Lean Canvas)",
+      "path": "fixtures/recommended/root.flc.json",
+      "ownerId": "human",
+      "parentId": null
+    }
+  ]
+}
