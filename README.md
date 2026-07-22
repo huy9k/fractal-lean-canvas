@@ -35,8 +35,6 @@ Requires Node.js 20+.
 
 Source tree mirrors that split: `src/shared/` (pure), `src/node/` (`fs`), `src/cli/` (bin only).
 
-**Breaking (0.13):** typed cost/revenue/metric line items; fractal nesting only on cost `node`; envelope `currency`; canvas date windows; cadence-aware net-burn rollups. See below.
-
 ## Concepts
 
 1. **One recursive shape** — Every node is a `FractalLeanCanvas` with the nine Lean Canvas dimensions and a required `startDate`/`endDate` window.
@@ -128,8 +126,8 @@ Exit `0` on success, non-zero with path + message diagnostics on failure. `markd
 
 ```json
 {
-  "$schema": "https://example.com/flc/0.13.0.json",
-  "schemaVersion": "0.13.0",
+  "$schema": "https://example.com/flc/0.14.1.json",
+  "schemaVersion": "0.14.1",
   "currency": "USD",
   "data": { "...": "FractalLeanCanvas" }
 }

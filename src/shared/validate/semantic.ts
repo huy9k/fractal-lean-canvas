@@ -2,6 +2,8 @@ import {
   collectAllLineItemIds,
   collectCostItems,
   isEmbeddedCanvas,
+  isRemoteCanvasRef,
+  type CanvasIdRef,
   type CanvasSlot,
   type FractalLeanCanvas,
 } from "../schema/canvas.js";
@@ -29,16 +31,33 @@ export type NestedCanvasSlot = {
   slot: CanvasSlot;
 };
 
+/** Resolved document from a canvas id / git locator ref. */
+export type ResolvedCanvasDoc = {
+  canvas: FractalLeanCanvas;
+  file: string;
+};
+
 /**
  * Options for graph-aware semantic walks (used by ecosystem validation).
  */
 export type SemanticWalkOptions = {
-  /** Resolve a canvas id to a document; return an issue on failure. */
+  /**
+   * Resolve a canvas id-ref (optional git locator) to a document.
+   * Prefer this over `resolveCanvasId` for cross-repo support.
+   */
+  resolveCanvasRef?: (
+    ref: CanvasIdRef,
+    fromFile: string,
+    slotPath: string,
+  ) => ResolvedCanvasDoc | SemanticIssue;
+  /**
+   * @deprecated Prefer `resolveCanvasRef`. Still honored when `resolveCanvasRef` is omitted.
+   */
   resolveCanvasId?: (
     canvasId: string,
     fromFile: string,
     slotPath: string,
-  ) => { canvas: FractalLeanCanvas; file: string } | SemanticIssue;
+  ) => ResolvedCanvasDoc | SemanticIssue;
   /** Path/label of the document owning `root`. */
   file?: string;
   /** Shared id registry for ecosystem-wide uniqueness. */
@@ -69,7 +88,7 @@ export function collectCanvasSlots(
 
 /**
  * Semantic rules: unique ids, max depth, cycle guard, date bounds, cost rollups.
- * Embedded canvases under cost `node` are always walked; `{ id }` refs need `resolveCanvasId`.
+ * Embedded canvases under cost `node` are always walked; `{ id }` refs need a resolver.
  */
 export function validateSemantic(
   root: FractalLeanCanvas,
@@ -109,12 +128,33 @@ export function validateSemantic(
     seenIds.set(id, file ? `${file}:${path}` : path);
   };
 
+  /** Resolve via resolveCanvasRef, else legacy resolveCanvasId. */
+  const invokeResolver = (
+    ref: CanvasIdRef,
+    fromFile: string,
+    slotPath: string,
+  ): ResolvedCanvasDoc | SemanticIssue | undefined => {
+    if (options.resolveCanvasRef) {
+      return options.resolveCanvasRef(ref, fromFile, slotPath);
+    }
+    if (options.resolveCanvasId) {
+      if (isRemoteCanvasRef(ref)) {
+        return {
+          path: slotPath,
+          message: `Remote canvas ref "${ref.id}" (git) requires resolveCanvasRef`,
+        };
+      }
+      return options.resolveCanvasId(ref.id, fromFile, slotPath);
+    }
+    return undefined;
+  };
+
   /** Resolve a node slot (embedded canvas or id ref); skip when not following links. */
   const resolveChild = (
     slot: CanvasSlot,
     slotPath: string,
     fromFile: string,
-  ): { canvas: FractalLeanCanvas; file: string } | undefined => {
+  ): ResolvedCanvasDoc | undefined => {
     if (idStack.includes(slot.id)) {
       pushIssue(
         {
@@ -130,9 +170,8 @@ export function validateSemantic(
       return { canvas: slot, file: fromFile };
     }
 
-    if (!options.resolveCanvasId) return undefined;
-
-    const result = options.resolveCanvasId(slot.id, fromFile, slotPath);
+    const result = invokeResolver(slot, fromFile, slotPath);
+    if (result === undefined) return undefined;
     if ("message" in result) {
       pushIssue(result, fromFile);
       return undefined;

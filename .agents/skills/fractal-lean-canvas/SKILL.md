@@ -1,6 +1,6 @@
 ---
 name: fractal-lean-canvas
-description: >-
+description:
   Read, create, edit, and validate Fractal Lean Canvas (FLC) ecosystems —
   recursive Lean Canvas JSON under root.flc.json with cost-sponsored child
   nodes. Use when working with .flc.json files, FLC schemas, Ops-as-Code
@@ -22,7 +22,7 @@ FLC is a **recursive Lean Canvas** contract: every node shares one shape; child 
 2. **Fractal nesting only on cost.** Child link is `costStructure.expenses[].node: { "id": "..." }`. No drill-down from UVP, segments, revenue, or a canvas-level `children` list. Nested nodes are **cost centers** under **budgetary control** — see [nesting.md](references/nesting.md).
 3. **Tree, not DAG.** Each child canvas has at most one sponsoring expense; ids are unique; children must not target the root id.
 4. **Root vs bare.** Only `root.flc.json` is a versioned envelope (`schemaVersion`, `currency`, `data`). Every other `*.flc.json` is a bare `FractalLeanCanvas`.
-5. **Ids rule nesting, not paths.** Filename ≈ `id` is a convenience. Links resolve by canvas `id` across the tree.
+5. **Ids rule nesting, not paths.** Filename ≈ `id` is a convenience. Links resolve by canvas `id` across the tree. Cross-repo links keep that `id` and add optional `git: { url, ref?, path? }` — never encode locators inside the id string.
 6. **Validate after edits.** Run ecosystem validate before claiming success.
 
 ## When this skill applies

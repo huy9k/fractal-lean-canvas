@@ -4,8 +4,8 @@
 
 ```json
 {
-  "$schema": "https://raw.githubusercontent.com/huy9k/fractal-lean-canvas/raw-schema-json/envelope-0.13.0.json",
-  "schemaVersion": "0.13.0",
+  "$schema": "https://raw.githubusercontent.com/huy9k/fractal-lean-canvas/raw-schema-json/envelope-0.14.1.json",
+  "schemaVersion": "0.14.1",
   "currency": "USD",
   "data": { "...": "FractalLeanCanvas" }
 }
@@ -83,3 +83,30 @@ Parent expense (inside some canvas):
 ```
 
 Child file `nodes/exec-on-demand-dispatch.flc.json` must have `"id": "exec-on-demand-dispatch"`.
+
+## Cross-repo cost link
+
+Same-ecosystem links stay `{ "id": "…" }`. To sponsor a canvas in another git repo, add a host-agnostic `git` locator:
+
+```json
+{
+  "id": "exp-life",
+  "title": "Life ecosystem budget",
+  "amountMinor": 100000,
+  "cadence": { "type": "recurring", "every": 1, "unit": "month" },
+  "node": {
+    "id": "life-flc",
+    "git": {
+      "url": "https://github.com/org-name/repo-name.git",
+      "ref": "main",
+      "path": "canvas/root.flc.json"
+    }
+  }
+}
+```
+
+- `id` is still the real canvas id inside that source.
+- `git.url` is a clone/fetch URL (https or ssh); hosts map it to GitHub/GitLab/etc.
+- `git.ref` / `git.path` are optional (host defaults / index lookup).
+- Foreign amounts must already use the **parent ecosystem envelope currency** (no FX in schema).
+- Local `validate` cannot fetch remotes; hosts supply a resolver for full rollup checks.

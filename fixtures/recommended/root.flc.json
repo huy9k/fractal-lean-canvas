@@ -1,6 +1,6 @@
 {
-  "$schema": "https://raw.githubusercontent.com/huy9k/fractal-lean-canvas/raw-schema-json/envelope-0.13.0.json",
-  "schemaVersion": "0.13.0",
+  "$schema": "https://raw.githubusercontent.com/huy9k/fractal-lean-canvas/raw-schema-json/envelope-0.14.1.json",
+  "schemaVersion": "0.14.1",
   "currency": "USD",
   "data": {
     "id": "uber-lean-canvas",

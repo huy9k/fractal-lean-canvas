@@ -2,17 +2,48 @@ import Type from "typebox";
 import type { TSchema } from "typebox";
 import type { BillingCadence } from "../finance/cadence.js";
 
-/** Pointer to another canvas by its `id` (resolved across the ecosystem). */
+/**
+ * Host-agnostic git locator for a canvas in another repository.
+ * Services (GitHub, GitLab, …) map `url` to their fetch APIs.
+ */
+export const CanvasGitLocator = Type.Object(
+  {
+    url: Type.String({ minLength: 1 }),
+    ref: Type.Optional(Type.String({ minLength: 1 })),
+    path: Type.Optional(Type.String({ minLength: 1 })),
+  },
+  { additionalProperties: false },
+);
+
+export type CanvasGitLocator = {
+  url: string;
+  ref?: string;
+  path?: string;
+};
+
+/**
+ * Pointer to another canvas by its `id`.
+ * Same-ecosystem: `{ id }` only. Cross-repo: add optional `git` locator.
+ */
 export const CanvasIdRef = Type.Object(
   {
     id: Type.String({ minLength: 1 }),
+    git: Type.Optional(CanvasGitLocator),
   },
   { additionalProperties: false },
 );
 
 export type CanvasIdRef = {
   id: string;
+  git?: CanvasGitLocator;
 };
+
+/** True when the ref points outside the local filesystem ecosystem. */
+export function isRemoteCanvasRef(
+  ref: CanvasIdRef,
+): ref is CanvasIdRef & { git: CanvasGitLocator } {
+  return Boolean(ref.git?.url);
+}
 
 const IsoDate = Type.String({ pattern: "^\\d{4}-\\d{2}-\\d{2}$" });
 

@@ -2,11 +2,11 @@
 
 Use `npx fractal-lean-canvas validate <path>` or `validateEcosystem` from `fractal-lean-canvas/node`.
 
-| Layer      | Checks                                                                                                                         |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Structural | Root = envelope (`currency` ISO 4217); other `.flc.json` = bare canvas; typed line items                                       |
-| Semantic   | Unique `id`s, max depth (`16`), cycle guard, date bounds, single-parent cost tree, cadence-aware net-burn ≤ sponsoring expense |
-| Ecosystem  | Requires `root.flc.json`; resolves cost `{ id }` links; bans unreachable files; ecosystem-wide id uniqueness                   |
+| Layer      | Checks                                                                                                                                                            |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Structural | Root = envelope (`currency` ISO 4217); other `.flc.json` = bare canvas; typed line items                                                                          |
+| Semantic   | Unique `id`s, max depth (`16`), cycle guard, date bounds, single-parent cost tree, cadence-aware net-burn ≤ sponsoring expense                                    |
+| Ecosystem  | Requires `root.flc.json`; resolves cost `{ id }` links (and `{ id, git }` when a host resolver is supplied); bans unreachable files; ecosystem-wide id uniqueness |
 
 ## Semantic highlights
 
@@ -17,10 +17,10 @@ Use `npx fractal-lean-canvas validate <path>` or `validateEcosystem` from `fract
 
 ## API split
 
-| API                                | Use when                                                              |
-| ---------------------------------- | --------------------------------------------------------------------- |
-| `validateDocument(json, pathHint)` | Single root envelope in memory (walks nested inline nodes if present) |
-| `validateEcosystem(dirOrRootPath)` | Multi-file tree with `{ id }` refs across files                       |
+| API                                | Use when                                                                                |
+| ---------------------------------- | --------------------------------------------------------------------------------------- |
+| `validateDocument(json, pathHint)` | Single root envelope in memory (walks nested inline nodes if present)                   |
+| `validateEcosystem(dirOrRootPath)` | Multi-file tree with `{ id }` refs across files; remote `git` refs need a host resolver |
 
 CLI `validate` is the ecosystem path. Prefer it after any multi-file edit.
 

@@ -524,4 +524,123 @@ describe("FLC validation", () => {
       result.issues.some((i) => i.message.includes("already sponsored")),
     );
   });
+
+  it("accepts cost node with git locator structurally", () => {
+    const issues = validateDocument(
+      envelope(
+        blankCanvas({
+          id: "root",
+          title: "Root",
+          costStructure: {
+            expenses: [
+              {
+                id: "exp-remote",
+                title: "Remote budget",
+                amountMinor: 100_00,
+                cadence: MONTHLY,
+                node: {
+                  id: "life-flc",
+                  git: {
+                    url: "https://github.com/org-name/repo-name.git",
+                    ref: "main",
+                    path: "canvas/root.flc.json",
+                  },
+                },
+              },
+            ],
+          },
+        }),
+      ),
+    );
+    assert.equal(issues.length, 0);
+  });
+
+  it("reports unresolved remote git refs in local validateEcosystem", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "flc-remote-"));
+    await writeFile(
+      join(dir, ROOT_FILE_NAME),
+      JSON.stringify(
+        envelope(
+          blankCanvas({
+            id: "root",
+            title: "Root",
+            costStructure: {
+              expenses: [
+                {
+                  id: "exp-remote",
+                  title: "Remote budget",
+                  amountMinor: 100_00,
+                  cadence: MONTHLY,
+                  node: {
+                    id: "life-flc",
+                    git: {
+                      url: "https://github.com/org-name/repo-name.git",
+                      path: "canvas/root.flc.json",
+                    },
+                  },
+                },
+              ],
+            },
+          }),
+        ),
+      ),
+    );
+    const result = await validateEcosystem(dir);
+    assert.equal(result.ok, false);
+    assert.ok(
+      result.issues.some((i) =>
+        i.message.includes("cannot be resolved by local validate"),
+      ),
+      JSON.stringify(result.issues, null, 2),
+    );
+  });
+
+  it("resolveCanvasRef can load a remote-shaped ref for rollup", () => {
+    const remoteChild = blankCanvas({
+      id: "life-flc",
+      title: "Life",
+      valueProposition: {
+        statements: [{ id: "life-uvp", title: "x" }],
+        highLevelConcepts: [],
+      },
+      unfairAdvantage: { advantages: [{ id: "life-moat", title: "x" }] },
+      costStructure: {
+        expenses: [
+          {
+            id: "c1",
+            title: "Burn",
+            amountMinor: 50_00,
+            cadence: MONTHLY,
+          },
+        ],
+      },
+    });
+    const parent = blankCanvas({
+      id: "root",
+      title: "Root",
+      costStructure: {
+        expenses: [
+          {
+            id: "exp-remote",
+            title: "Remote budget",
+            amountMinor: 100_00,
+            cadence: MONTHLY,
+            node: {
+              id: "life-flc",
+              git: { url: "https://github.com/org-name/repo-name.git" },
+            },
+          },
+        ],
+      },
+    });
+    const issues = validateSemantic(parent, undefined, {
+      resolveCanvasRef: (ref) => {
+        if (ref.id === "life-flc" && ref.git?.url) {
+          return { canvas: remoteChild, file: "remote:life-flc" };
+        }
+        return { path: "", message: `unexpected ref ${ref.id}` };
+      },
+    });
+    assert.equal(issues.length, 0, JSON.stringify(issues, null, 2));
+  });
 });

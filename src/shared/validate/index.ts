@@ -13,5 +13,6 @@ export {
   type SemanticIssue,
   type SemanticWalkOptions,
   type NestedCanvasSlot,
+  type ResolvedCanvasDoc,
 } from "./semantic.js";
 export { validateDocument, type ValidationIssue } from "./document.js";

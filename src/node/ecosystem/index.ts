@@ -15,11 +15,15 @@ import {
   validateStructural,
 } from "../../shared/validate/structural.js";
 import {
+  isRemoteCanvasRef,
+  type CanvasIdRef,
+  type FractalLeanCanvas,
+} from "../../shared/schema/canvas.js";
+import {
   validateSemantic,
   type SemanticIssue,
 } from "../../shared/validate/semantic.js";
 import type { ValidationIssue } from "../../shared/validate/document.js";
-import type { FractalLeanCanvas } from "../../shared/schema/canvas.js";
 
 export type { ValidationIssue };
 
@@ -113,6 +117,7 @@ async function locateRoot(
 
 /**
  * Lint a single-root ecosystem: root.json (envelope) + bare canvases linked by id.
+ * Remote `git` locators need a host-supplied resolver; CLI reports them as unresolved.
  */
 export async function validateEcosystem(
   targetPath: string,
@@ -224,23 +229,31 @@ export async function validateEcosystem(
     byCanvasId.set(doc.canvas.id, doc);
   }
 
-  const resolveCanvasId = (
-    canvasId: string,
+  /** Resolve local `{ id }` refs; report remote `git` locators as host-resolved. */
+  const resolveCanvasRef = (
+    ref: CanvasIdRef,
     _fromFile: string,
     slotPath: string,
   ): { canvas: FractalLeanCanvas; file: string } | SemanticIssue => {
-    if (canvasId === rootDoc!.canvas.id) {
+    if (isRemoteCanvasRef(ref)) {
+      return {
+        path: slotPath,
+        message: `Remote canvas "${ref.id}" at ${ref.git.url} cannot be resolved by local validate (supply a host resolver)`,
+      };
+    }
+
+    if (ref.id === rootDoc!.canvas.id) {
       return {
         path: slotPath,
         message: `Canvas id ref must not target the root canvas (${ROOT_FILE_NAME})`,
       };
     }
 
-    const target = byCanvasId.get(canvasId);
+    const target = byCanvasId.get(ref.id);
     if (!target) {
       return {
         path: slotPath,
-        message: `Missing canvas id "${canvasId}"`,
+        message: `Missing canvas id "${ref.id}"`,
       };
     }
     return { canvas: target.canvas, file: target.label };
@@ -256,7 +269,7 @@ export async function validateEcosystem(
     seenIds,
     walkedFiles,
     idsRegisteredFor,
-    resolveCanvasId,
+    resolveCanvasRef,
   });
 
   for (const issue of semanticIssues) {
