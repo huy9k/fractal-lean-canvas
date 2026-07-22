@@ -20,10 +20,11 @@ FLC is a **recursive Lean Canvas** contract: every node shares one shape; child 
 
 1. **Never reason from a single `.flc.json` alone.** Discover the ecosystem (`root.flc.json` + all bare canvases), then read the open canvas and its cost-sponsored children.
 2. **Fractal nesting only on cost.** Child link is `costStructure.expenses[].node: { "id": "..." }`. No drill-down from UVP, segments, revenue, or a canvas-level `children` list. Nested nodes are **cost centers** under **budgetary control** — see [nesting.md](references/nesting.md).
-3. **Tree, not DAG.** Each child canvas has at most one sponsoring expense; ids are unique; children must not target the root id.
-4. **Root vs bare.** Only `root.flc.json` is a versioned envelope (`schemaVersion`, `currency`, `data`). Every other `*.flc.json` is a bare `FractalLeanCanvas`.
-5. **Ids rule nesting, not paths.** Filename ≈ `id` is a convenience. Links resolve by canvas `id` across the tree. Cross-repo links keep that `id` and add optional `git: { url, ref?, path? }` — never encode locators inside the id string.
-6. **Validate after edits.** Run ecosystem validate before claiming success.
+3. **Sponsoring amounts are never free.** `amountMinor ≥ 1` on every money line. A profitable child does not zero out parent cost — nesting still costs at least **attention** (opportunity cost). Example: 1 day/mo × $1000/day → ≥ `$1000/mo` on the sponsoring expense. Details: [nesting.md](references/nesting.md#why-amountminor-must-be-at-least-1-never-zero).
+4. **Tree, not DAG.** Each child canvas has at most one sponsoring expense; ids are unique; children must not target the root id.
+5. **Root vs bare.** Only `root.flc.json` is a versioned envelope (`schemaVersion`, `currency`, `data`). Every other `*.flc.json` is a bare `FractalLeanCanvas`.
+6. **Ids rule nesting, not paths.** Filename ≈ `id` is a convenience. Links resolve by canvas `id` across the tree. Cross-repo links keep that `id` and add optional `git: { url, ref?, path? }` — never encode locators inside the id string.
+7. **Validate after edits.** Run ecosystem validate before claiming success.
 
 ## When this skill applies
 
@@ -77,7 +78,7 @@ Host tip: some apps expose an FLC index API (e.g. Hub `getFlcIndex`) — use it 
 - **Root file:** keep `$schema`, `schemaVersion`, `currency`; mutate only `data` (and currency when intentional).
 - **Child file:** bare object — never wrap children in an envelope.
 - **New child:** create bare canvas → add `node: { "id": "<child-id>" }` on exactly one parent expense → ensure child window fits parent / sponsor rules.
-- **Money:** `amountMinor` is an integer in the envelope `currency`’s **minor unit** (not major units), **per cadence tick**. For `currency: "USD"`, that means **cents**: `$40,000.00` → `4000000`, `$12.50` → `1250`, `$1.00` → `100`. Never store dollars as a float or as a whole-dollar integer in `amountMinor`. Cadence is `one_time` or `recurring { every, unit }`.
+- **Money:** `amountMinor` is an integer in the envelope `currency`’s **minor unit** (not major units), **per cadence tick**, and must be **≥ 1** (omit the line instead of `$0`). For `currency: "USD"`, that means **cents**: `$40,000.00` → `4000000`, `$12.50` → `1250`, `$1.00` → `100`. Never store dollars as a float or as a whole-dollar integer in `amountMinor`. Cadence is `one_time` or `recurring { every, unit }`. Sponsoring costs stay ≥ 1 even when the child is profitable — see [nesting.md](references/nesting.md#why-amountminor-must-be-at-least-1-never-zero).
 - Prefer `npx fractal-lean-canvas init` / `init --root` over hand-rolled blanks.
 
 ### 4. Validate
@@ -134,6 +135,7 @@ import { validateEcosystem, markdownFromPath } from "fractal-lean-canvas/node";
 - Putting child envelopes under `nodes/`
 - Linking children from non-cost fields (including revenue or canvas-level `children`)
 - Treating nesting as profit-center consolidation or rolling child profit into the parent
+- Booking `$0` on a sponsoring expense because the child nets profit (attention still costs the parent)
 - Sharing one child across multiple sponsoring expenses
 - Using `select`-style “dump everything” mental models — project id / title / sponsor / money fields you need
 - Encoding org-specific policy in the schema package (belongs in the state repo)

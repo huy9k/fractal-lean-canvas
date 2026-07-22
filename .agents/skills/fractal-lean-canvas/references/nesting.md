@@ -67,11 +67,26 @@ The parent’s sponsoring expense is a **ceiling on loss**, not a claim on gains
 
 If the organization later needs money to move parent ← child, model an **explicit remittance** (visible money lines on both sides). Do not add schema rules that push profit up automatically.
 
+## Why amountMinor must be at least 1 (never zero)
+
+Schema rule: every money line (`costStructure.expenses` and `revenueStreams.returns`) requires `amountMinor: integer ≥ 1`. Omit the line instead of booking `$0`.
+
+For **sponsoring costs** this is intentional economics, not pedantry:
+
+- Nesting always costs the parent **something** — at minimum **attention** (opportunity cost of time spent on the child).
+- A child that nets a local profit does **not** make the parent’s sponsorship free. Child surplus stays on the child; the parent still paid to keep the nest alive.
+- Example: you spend **1 day/month** on a nested project and your rate is **$1000/day** → the sponsoring expense is still at least **$1000/mo**, even when the child shows green on its own P&L.
+
+So the parent cost row answers _“what does it cost me to keep this linked?”_ The child’s own books answer _“is the nested unit solvent?”_ Those are different ledgers. Forcing `amountMinor ≥ 1` stops “free nesting” fiction: if the row exists, the appropriation is real.
+
+(Revenue shares the same structural floor — a zero return is noise; delete the line.)
+
 ## What validation encodes
 
 - Child may attach to **at most one** sponsoring expense (tree, not DAG).
 - Over the overlapping date window: **child net burn ≤ sponsoring expense total**.
 - A profitable child (net burn ≤ 0) easily satisfies the ceiling; surplus is **not** credited to the parent.
+- Money lines reject `amountMinor < 1` structurally (see above).
 - The root canvas has no sponsor and may run at a loss freely.
 
 See [validation.md](validation.md) for the full check list.
@@ -87,3 +102,4 @@ See [validation.md](validation.md) for the full check list.
 - Nesting under UVP, segments, or a bare `children` array “because it’s a sub-project”
 - Treating the sponsoring expense as ownership of child upside
 - Silent profit rollup instead of an explicit upstream remittance when cash must move
+- Booking `$0` (or omitting attention) on a sponsoring expense because the child is profitable — nesting still costs the parent; use a real appropriation (e.g. attention × rate)

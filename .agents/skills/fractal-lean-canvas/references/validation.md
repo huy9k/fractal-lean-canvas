@@ -2,11 +2,11 @@
 
 Use `npx fractal-lean-canvas validate <path>` or `validateEcosystem` from `fractal-lean-canvas/node`.
 
-| Layer      | Checks                                                                                                                                                            |
-| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Structural | Root = envelope (`currency` ISO 4217); other `.flc.json` = bare canvas; typed line items                                                                          |
-| Semantic   | Unique `id`s, max depth (`16`), cycle guard, date bounds, single-parent cost tree, cadence-aware net-burn ≤ sponsoring expense                                    |
-| Ecosystem  | Requires `root.flc.json`; resolves cost `{ id }` links (and `{ id, git }` when a host resolver is supplied); bans unreachable files; ecosystem-wide id uniqueness |
+| Layer      | Checks                                                                                                                                                                                                                |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Structural | Root = envelope (`currency` ISO 4217); other `.flc.json` = bare canvas; typed line items; money `amountMinor ≥ 1` (no free / zero lines — see [nesting.md](nesting.md#why-amountminor-must-be-at-least-1-never-zero)) |
+| Semantic   | Unique `id`s, max depth (`16`), cycle guard, date bounds, single-parent cost tree, cadence-aware net-burn ≤ sponsoring expense                                                                                        |
+| Ecosystem  | Requires `root.flc.json`; resolves cost `{ id }` links (and `{ id, git }` when a host resolver is supplied); bans unreachable files; ecosystem-wide id uniqueness                                                     |
 
 ## Semantic highlights
 

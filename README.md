@@ -142,7 +142,9 @@ Exit `0` on success, non-zero with path + message diagnostics on failure. `markd
 | `revenueStreams.returns`                                                          | `RevenueLineItem` | same as cost                                   | —                   |
 | `keyMetrics.kpis`                                                                 | `MetricLineItem`  | `targetValue` + `comparator` + optional `unit` | —                   |
 
-`amountMinor` is the integer minor unit of envelope `currency` **per cadence tick** (e.g. cents for USD). Cadence is `one_time` or `recurring { every, unit }`. Item dates inherit the canvas window when omitted.
+`amountMinor` is the integer minor unit of envelope `currency` **per cadence tick** (e.g. cents for USD). It must be **≥ 1** — omit the line instead of booking `$0`. Cadence is `one_time` or `recurring { every, unit }`. Item dates inherit the canvas window when omitted.
+
+Sponsoring cost amounts stay positive even when the child is profitable: nesting still costs the parent at least **attention** (opportunity cost). Rationale: [`.agents/skills/fractal-lean-canvas/references/nesting.md`](.agents/skills/fractal-lean-canvas/references/nesting.md#why-amountminor-must-be-at-least-1-never-zero).
 
 Cost `node` ids must match another bare canvas’s `id`, must be unique across the ecosystem, must not target the root, and each child may have **at most one** sponsoring expense (tree, not DAG). See [`fixtures/recommended`](fixtures/recommended) (early Uber Lean Canvas + cost-sponsored children).
 
@@ -156,7 +158,7 @@ Cost `node` ids must match another bare canvas’s `id`, must be unique across t
 
 | Layer      | Checks                                                                                                                         |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Structural | Root = envelope (`currency` ISO 4217); other `.flc.json` = bare canvas; typed line items                                       |
+| Structural | Root = envelope (`currency` ISO 4217); other `.flc.json` = bare canvas; typed line items; money `amountMinor ≥ 1`              |
 | Semantic   | Unique `id`s, max depth (`16`), cycle guard, date bounds, single-parent cost tree, cadence-aware net-burn ≤ sponsoring expense |
 | Ecosystem  | Requires `root.flc.json`; resolves cost `{ id }` links; bans unreachable files; ecosystem-wide id uniqueness                   |
 

@@ -12,7 +12,7 @@
 ```
 
 - `schemaVersion` must match the installed package version until `1.0.0` stabilizes.
-- `currency` is ISO 4217 (`^[A-Z]{3}$`). All `amountMinor` values are in that currency’s minor unit.
+- `currency` is ISO 4217 (`^[A-Z]{3}$`). All `amountMinor` values are in that currency’s minor unit and must be **≥ 1** (omit the line instead of `$0`). Sponsoring costs stay positive even when the child is profitable — [nesting.md](nesting.md#why-amountminor-must-be-at-least-1-never-zero).
 - Version authority and settlement currency live **only** on the root envelope.
 
 ## Bare child (`*.flc.json`)
